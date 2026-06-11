@@ -354,7 +354,8 @@ class Handler(BaseHTTPRequestHandler):
 def main() -> None:
     llm.load_env()
     ensure_db()
-    port = int(sys.argv[1]) if len(sys.argv) > 1 else 8400
+    import os
+    port = int(sys.argv[1]) if len(sys.argv) > 1 else int(os.environ.get("PORT", 8400))
     # 绑 0.0.0.0 供局域网设备（手机/同事电脑）访问演示；公网部署需加鉴权
     srv = ThreadingHTTPServer(("0.0.0.0", port), Handler)
     mode = f"DeepSeek（{llm.model_name()}）已接入" if llm.available() else "未配置 LLM，规则引擎模式"

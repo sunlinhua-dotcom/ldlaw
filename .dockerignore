@@ -1,0 +1,8 @@
+.env
+db/
+__pycache__/
+*.pyc
+.DS_Store
+.git/
+.claude/
+data/raw/
