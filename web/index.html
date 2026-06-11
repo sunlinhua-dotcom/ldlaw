@@ -3,456 +3,1315 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>劳法通 · 劳动法智能百科（内部演示）</title>
+<title>劳法通 · 劳动法智能百科</title>
 <style>
-/* === CJK Typography Defaults (djhh) === */
-html { hanging-punctuation: allow-end; }
+/* ============================================================
+   劳法通 · 「判例纸卷」设计
+   宣纸暖白 × 墨黑 × 朱砂印章红 · 宋体标题 / 黑体正文
+   PC：左书脊导航 + 中内容 + 右朱批依据面板
+   移动：底部 Tab 栏 + 单栏
+   ============================================================ */
 :root {
-  --ink: #1c2433; --ink-2: #4a5468; --ink-3: #8a90a0;
-  --paper: #f5f3ee; --card: #ffffff; --line: #e4e0d5;
-  --accent: #1f4e9e; --accent-soft: #eef3fb;
-  --warn: #8a5d07; --warn-bg: #fdf4e0; --warn-line: #ecd9a8;
-  --danger: #b4372f; --danger-bg: #fbeeec;
-  --ok: #2f7d4f; --ok-bg: #ebf5ee;
-  --r: 10px;
+  --paper:      #f7f3ea;
+  --paper-2:    #f0ebdd;
+  --card:       #fffdf7;
+  --ink:        #211e1a;
+  --ink-2:      #5a544b;
+  --ink-3:      #a39a8c;
+  --line:       #e5ddcb;
+  --line-2:     #efe9da;
+  --seal:       #bd3a2c;          /* 朱砂 */
+  --seal-deep:  #9c2d21;
+  --seal-pale:  #fbeae6;
+  --gold:       #a07c2e;          /* 秋香 */
+  --gold-bg:    #f9f1dd;
+  --green:      #3a7d54;
+  --green-bg:   #ebf4ee;
+  --rail:       #232019;          /* 书脊墨色 */
+  --rail-ink:   #c8bfa9;
+  --rail-w:     92px;
+  --tabbar-h:   60px;
+  --serif: "Songti SC", "Noto Serif SC", "Source Han Serif SC", "SimSun", serif;
+  --sans:  -apple-system, "PingFang SC", "Hiragino Sans GB", "Source Han Sans SC", "Microsoft YaHei", sans-serif;
+  --shadow:    0 1px 3px rgba(60,48,30,.06), 0 6px 24px rgba(60,48,30,.07);
+  --shadow-lg: 0 2px 6px rgba(60,48,30,.08), 0 16px 48px rgba(60,48,30,.12);
 }
-* { box-sizing: border-box; margin: 0; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { hanging-punctuation: allow-end; }
 body {
-  font-family: -apple-system, "PingFang SC", "Hiragino Sans GB", "Source Han Sans SC",
-               "Microsoft YaHei", "Helvetica Neue", sans-serif;
+  font-family: var(--sans);
   font-feature-settings: "tnum", "palt";
-  background: var(--paper); color: var(--ink);
-  line-height: 1.65; font-size: 15px;
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 15px; line-height: 1.75;
+  -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
 }
+/* 纸张颗粒 */
+body::after {
+  content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 999;
+  opacity: .35; mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 .93 0 0 0 0 .91 0 0 0 0 .86 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+/* djhh 中文排版 */
 .app, .app * { word-break: keep-all; overflow-wrap: break-word; }
-h1, h2, h3, h4, .balance { text-wrap: balance; line-height: 1.2; }
+h1, h2, h3, h4, .balance { text-wrap: balance; line-height: 1.3; }
 p, li, dd, .pretty { text-wrap: pretty; }
 .num { white-space: nowrap; font-variant-numeric: tabular-nums; }
-
-.wrap { max-width: 1020px; margin: 0 auto; padding: 0 16px; }
-
-/* —— 头部 —— */
-header { background: var(--ink); color: #f2efe7; }
-.head-in { display: flex; align-items: center; gap: 12px; padding: 14px 0; flex-wrap: wrap; }
-.brand { font-family: "Songti SC", "Noto Serif SC", serif; font-size: 26px; font-weight: 700; letter-spacing: 1px; }
-.brand small { font-family: inherit; font-weight: 400; }
-.tag { font-size: 12px; border: 1px solid #5a647a; border-radius: 999px; padding: 2px 10px; color: #c8cedd; white-space: nowrap; }
-.head-right { margin-left: auto; display: flex; align-items: center; gap: 8px; font-size: 13px; color: #c8cedd; }
-.head-right select {
-  font-size: 14px; padding: 5px 8px; border-radius: 8px;
-  border: 1px solid #5a647a; background: #2a3349; color: #f2efe7;
-}
-#llm-badge { font-size: 12px; padding: 2px 10px; border-radius: 999px; background: #2a3349; border: 1px solid #5a647a; white-space: nowrap; }
-
-/* —— 导航 —— */
-nav { position: sticky; top: 0; z-index: 9; background: var(--card); border-bottom: 1px solid var(--line); }
-.nav-in { display: flex; }
-.nav-in button {
-  flex: 1; padding: 12px 4px; font-size: 15px; background: none; border: none;
-  border-bottom: 3px solid transparent; color: var(--ink-2); cursor: pointer; white-space: nowrap;
-}
-.nav-in button.on { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
-
-main { padding: 18px 0 90px; }
-.view { display: none; }
-.view.on { display: block; }
-
-.card { background: var(--card); border: 1px solid var(--line); border-radius: var(--r); padding: 16px; }
 .muted { color: var(--ink-3); font-size: 13px; }
-.badge { display: inline-block; font-size: 12px; padding: 1px 9px; border-radius: 999px; white-space: nowrap; vertical-align: 1px; }
-.b-blue { background: var(--accent-soft); color: var(--accent); }
-.b-warn { background: var(--warn-bg); color: var(--warn); border: 1px solid var(--warn-line); }
-.b-ok { background: var(--ok-bg); color: var(--ok); }
-.b-danger { background: var(--danger-bg); color: var(--danger); }
-.b-gray { background: #eeece5; color: var(--ink-2); }
+button { font-family: inherit; cursor: pointer; }
+::selection { background: var(--seal-pale); color: var(--seal-deep); }
 
-/* —— 问答 —— */
-#msgs { display: flex; flex-direction: column; gap: 14px; min-height: 200px; }
-.m-user { align-self: flex-end; max-width: 88%; background: var(--ink); color: #f2efe7;
-  padding: 10px 14px; border-radius: 14px 14px 4px 14px; }
-.m-bot { align-self: stretch; }
-.ans { background: var(--card); border: 1px solid var(--line); border-radius: var(--r); padding: 14px 16px; }
-.ans .route-line { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
-.ans .concl { font-size: 16px; font-weight: 600; max-width: 46ch; }
-.blk { margin-top: 12px; }
-.blk-label { font-size: 12px; color: var(--ink-3); letter-spacing: 2px; margin-bottom: 5px; }
-.steps { padding-left: 18px; display: grid; gap: 4px; font-size: 14px; }
-.cite { border: 1px solid var(--line); border-radius: 8px; margin-top: 6px; background: #fbfaf6; }
-.cite summary { cursor: pointer; padding: 8px 12px; font-size: 14px; list-style: none; }
+/* ============ 左书脊导航（PC）/ 底部 Tab（移动） ============ */
+#rail {
+  position: fixed; z-index: 100;
+  left: 0; top: 0; bottom: 0; width: var(--rail-w);
+  background: var(--rail);
+  display: flex; flex-direction: column; align-items: center;
+  padding: 18px 0 14px;
+}
+.seal-logo { margin-bottom: 26px; flex-shrink: 0; }
+.rail-nav { display: flex; flex-direction: column; gap: 4px; width: 100%; }
+.rail-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  width: 100%; padding: 11px 0 9px;
+  background: none; border: none; color: var(--rail-ink);
+  font-size: 11.5px; letter-spacing: 1px; opacity: .62;
+  border-left: 3px solid transparent; border-right: 3px solid transparent;
+  transition: opacity .18s, color .18s;
+}
+.rail-btn svg { width: 21px; height: 21px; }
+.rail-btn:hover { opacity: .95; }
+.rail-btn.on {
+  opacity: 1; color: #f4ead9;
+  border-left-color: var(--seal);
+  background: linear-gradient(90deg, rgba(189,58,44,.16), transparent 75%);
+}
+.rail-foot { margin-top: auto; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.llm-dot { width: 7px; height: 7px; border-radius: 50%; background: #6b655a; transition: background .3s; }
+.llm-dot.on { background: #69c98a; box-shadow: 0 0 8px rgba(105,201,138,.6); }
+.rail-foot small { color: #6b655a; font-size: 10px; letter-spacing: .5px; writing-mode: vertical-rl; }
+
+/* ============ 主区 ============ */
+#main { margin-left: var(--rail-w); min-height: 100vh; display: flex; flex-direction: column; }
+.topbar {
+  display: flex; align-items: center; gap: 14px;
+  padding: 16px 28px 14px;
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--paper) 82%, transparent);
+  backdrop-filter: blur(10px);
+  position: sticky; top: 0; z-index: 60;
+}
+.view-title {
+  font-family: var(--serif); font-size: 21px; font-weight: 700; letter-spacing: 2px;
+}
+.view-sub { font-size: 12.5px; color: var(--ink-3); margin-top: 1px; }
+.topbar-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.region-wrap {
+  display: flex; align-items: center; gap: 6px;
+  border: 1px solid var(--line); border-radius: 999px;
+  background: var(--card); padding: 5px 7px 5px 12px;
+  font-size: 13px; color: var(--ink-2);
+}
+.region-wrap select {
+  border: none; background: none; font-family: inherit;
+  font-size: 14px; color: var(--ink); outline: none; font-weight: 600;
+}
+.wrap { width: 100%; max-width: 1180px; margin: 0 auto; padding: 22px 28px 80px; }
+.view { display: none; }
+.view.on { display: block; animation: viewIn .35s cubic-bezier(.2,.7,.3,1) both; }
+@keyframes viewIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+/* ============ 问答 ============ */
+.chat-grid { display: grid; grid-template-columns: minmax(0,1fr) 332px; gap: 26px; align-items: start; }
+.chips-label {
+  font-size: 11px; letter-spacing: 3px; color: var(--ink-3); margin: 2px 0 8px;
+  display: flex; align-items: center; gap: 8px;
+}
+.chips-label::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+.chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+.chip {
+  font-size: 13px; padding: 8px 15px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--card); color: var(--ink-2);
+  transition: all .16s; box-shadow: 0 1px 2px rgba(60,48,30,.04);
+}
+.chip:hover { border-color: var(--seal); color: var(--seal-deep); background: var(--seal-pale); transform: translateY(-1px); }
+
+#msgs { display: flex; flex-direction: column; gap: 18px; min-height: 180px; }
+.m-user {
+  align-self: flex-end; max-width: 78%;
+  background: var(--ink); color: #f3eee2;
+  padding: 11px 16px; border-radius: 16px 16px 4px 16px;
+  font-size: 14.5px; box-shadow: var(--shadow);
+  animation: msgIn .3s cubic-bezier(.2,.7,.3,1) both;
+}
+.m-bot { align-self: stretch; animation: msgIn .35s cubic-bezier(.2,.7,.3,1) both; }
+@keyframes msgIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+.ans {
+  background: var(--card); border: 1px solid var(--line);
+  border-radius: 14px; padding: 20px 22px;
+  box-shadow: var(--shadow); position: relative; overflow: hidden;
+}
+.ans::before {  /* 顶部细朱线 */
+  content: ""; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--seal) 0 56px, var(--line) 56px);
+}
+.route-bar { display: flex; gap: 7px; flex-wrap: wrap; align-items: center; margin-bottom: 11px; }
+.badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 12px; padding: 2.5px 10px; border-radius: 4px;
+  white-space: nowrap; font-weight: 500; letter-spacing: .5px;
+}
+.badge::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+.b-seal  { background: var(--seal-pale); color: var(--seal-deep); }
+.b-gold  { background: var(--gold-bg); color: var(--gold); }
+.b-green { background: var(--green-bg); color: var(--green); }
+.b-gray  { background: var(--paper-2); color: var(--ink-2); }
+.concl {
+  font-family: var(--serif); font-size: 17.5px; font-weight: 700;
+  line-height: 1.55; max-width: 40ch;
+}
+.blk { margin-top: 16px; }
+.blk-label {
+  font-size: 11px; font-weight: 700; letter-spacing: 3px;
+  color: var(--ink-3); margin-bottom: 7px;
+  display: flex; align-items: center; gap: 8px;
+}
+.blk-label::after { content: ""; flex: 1; height: 1px; background: var(--line-2); }
+.steps { padding-left: 0; display: grid; gap: 7px; font-size: 14px; color: var(--ink-2); list-style: none; counter-reset: st; }
+.steps li { display: flex; gap: 10px; counter-increment: st; }
+.steps li::before {
+  content: counter(st, cjk-ideographic);
+  flex-shrink: 0; width: 21px; height: 21px; margin-top: 2px;
+  display: grid; place-items: center;
+  font-family: var(--serif); font-size: 11px; font-weight: 700;
+  color: var(--seal-deep); background: var(--seal-pale); border-radius: 50%;
+}
+
+/* —— 印章金额 —— */
+.stamp-wrap { display: flex; justify-content: flex-start; padding: 6px 0 2px; }
+.stamp {
+  position: relative; transform: rotate(-2deg);
+  border: 2.5px solid var(--seal); border-radius: 8px;
+  padding: 10px 22px 12px; color: var(--seal-deep);
+  background: color-mix(in srgb, var(--seal-pale) 55%, transparent);
+  animation: stamp .45s cubic-bezier(.2,1.4,.4,1) both;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--seal) 50%, transparent);
+}
+@keyframes stamp {
+  0% { transform: scale(1.7) rotate(-9deg); opacity: 0; }
+  62% { transform: scale(.95) rotate(-1.4deg); opacity: 1; }
+  100% { transform: scale(1) rotate(-2deg); }
+}
+.stamp-label { display: block; font-size: 11px; letter-spacing: 4px; opacity: .75; }
+.stamp-num { font-family: var(--serif); font-size: 30px; font-weight: 800; line-height: 1.18; }
+
+/* —— 朱批引用 —— */
+.cite {
+  border: none; border-left: 3px solid var(--seal);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--seal-pale) 45%, transparent), transparent 70%);
+  border-radius: 0 8px 8px 0; margin-top: 8px;
+}
+.cite summary {
+  cursor: pointer; padding: 9px 12px 9px 14px; font-size: 13.5px;
+  list-style: none; display: flex; align-items: baseline; gap: 8px;
+}
 .cite summary::-webkit-details-marker { display: none; }
-.cite summary::before { content: "§ "; color: var(--accent); }
-.cite blockquote { margin: 0; padding: 4px 14px 12px; font-size: 13.5px; color: var(--ink-2);
-  border-top: 1px dashed var(--line); max-width: 60ch; }
-.warnbox { background: var(--warn-bg); border: 1px solid var(--warn-line); border-radius: 8px;
-  padding: 9px 12px 9px 28px; font-size: 13.5px; color: var(--warn); display: grid; gap: 3px; }
-.ans-foot { display: flex; align-items: center; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
-.disc { font-size: 12px; color: var(--ink-3); }
-.btn-lawyer { margin-left: auto; font-size: 13px; padding: 7px 14px; border-radius: 8px;
-  border: 1px solid var(--danger); color: var(--danger); background: none; cursor: pointer; white-space: nowrap; }
-.btn-lawyer.solid { background: var(--danger); color: #fff; }
-.amount-line { font-size: 15px; }
-.amount-line .num { font-size: 22px; font-weight: 700; color: var(--accent); }
-.chips { display: flex; gap: 8px; flex-wrap: wrap; margin: 14px 0; }
-.chips button { font-size: 13px; padding: 7px 12px; border-radius: 999px; cursor: pointer;
-  border: 1px solid var(--line); background: var(--card); color: var(--ink-2); text-align: left; }
-.chips button:hover { border-color: var(--accent); color: var(--accent); }
-#ask-bar { position: fixed; left: 0; right: 0; bottom: 0; background: var(--card);
-  border-top: 1px solid var(--line); padding: 10px 0 calc(10px + env(safe-area-inset-bottom)); }
-.ask-in { display: flex; gap: 8px; }
-#q { flex: 1; font-size: 16px; font-family: inherit; padding: 11px 14px; border-radius: 10px;
-  border: 1px solid var(--line); resize: none; line-height: 1.5; background: var(--paper); }
-#send { font-size: 15px; padding: 0 22px; border-radius: 10px; border: none;
-  background: var(--accent); color: #fff; cursor: pointer; white-space: nowrap; }
-#send:disabled { opacity: .5; }
-.thinking { color: var(--ink-3); font-size: 14px; }
-.thinking::after { content: "…"; animation: dots 1.2s steps(4) infinite; }
-@keyframes dots { 0% { content: ""; } 25% { content: "·"; } 50% { content: "··"; } 75% { content: "···"; } }
+.cite-src { font-family: var(--serif); font-weight: 700; }
+.cite-art { color: var(--seal-deep); white-space: nowrap; }
+.cite summary .tg { margin-left: auto; color: var(--ink-3); font-size: 11px; transition: transform .2s; }
+.cite[open] summary .tg { transform: rotate(90deg); }
+.cite blockquote {
+  margin: 0; padding: 2px 16px 13px 14px;
+  font-size: 13.5px; color: var(--ink-2); max-width: 56ch; line-height: 1.8;
+}
+.v-tag { font-size: 11px; padding: 0 7px; border-radius: 3px; white-space: nowrap; }
+.v-ok   { background: var(--green-bg); color: var(--green); }
+.v-warn { background: var(--gold-bg); color: var(--gold); }
 
-/* —— 计算器 —— */
-.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
-.calc h3 { font-size: 17px; margin-bottom: 4px; }
-.f { display: grid; gap: 4px; margin-top: 10px; font-size: 13.5px; color: var(--ink-2); }
-.f input, .f select { font-size: 16px; padding: 9px 10px; border-radius: 8px;
-  border: 1px solid var(--line); background: #fbfaf6; font-family: inherit; width: 100%; }
-.f-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.chk { display: flex; align-items: center; gap: 7px; margin-top: 12px; font-size: 14px; color: var(--ink-2); }
-.btn { margin-top: 14px; width: 100%; font-size: 15px; padding: 11px; border-radius: 9px;
-  border: none; background: var(--accent); color: #fff; cursor: pointer; }
-.calc-out { margin-top: 14px; border-top: 1px dashed var(--line); padding-top: 12px; display: none; }
-.soon { opacity: .65; }
+/* —— 风险提示 —— */
+.warnbox {
+  border-left: 3px solid var(--gold);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--gold-bg) 70%, transparent), transparent 80%);
+  border-radius: 0 8px 8px 0;
+  padding: 11px 14px; font-size: 13.5px; color: #7a5d20;
+  display: grid; gap: 5px;
+}
+.warnbox div { padding-left: 14px; position: relative; max-width: 62ch; }
+.warnbox div::before { content: "‼"; position: absolute; left: 0; font-weight: 700; color: var(--gold); }
 
-/* —— 词条 / 知识库 —— */
-.list { display: grid; gap: 10px; }
-.entry-item { cursor: pointer; }
-.entry-item:hover { border-color: var(--accent); }
-.entry-item h3 { font-size: 16px; }
-ol.howto { padding-left: 20px; display: grid; gap: 4px; font-size: 14px; }
-.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)); gap: 10px; }
-.stat { background: var(--card); border: 1px solid var(--line); border-radius: var(--r);
-  padding: 12px 14px; }
-.stat .v { font-size: 24px; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; }
-.stat .l { font-size: 12.5px; color: var(--ink-3); margin-top: 2px; }
-.sec-title { font-size: 17px; margin: 22px 0 10px; display: flex; align-items: center; gap: 8px; }
-.tbl-wrap { overflow-x: auto; background: var(--card); border: 1px solid var(--line); border-radius: var(--r); }
-table { border-collapse: collapse; width: 100%; font-size: 13.5px; min-width: 560px; }
-th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
-th { color: var(--ink-3); font-weight: 500; font-size: 12.5px; white-space: nowrap; background: #fbfaf6; }
+.clar { display: grid; gap: 6px; font-size: 14px; color: var(--ink-2); }
+.clar li { list-style: none; padding-left: 22px; position: relative; }
+.clar li::before {
+  content: "?"; position: absolute; left: 0; top: 1px;
+  width: 16px; height: 16px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: var(--seal-pale); color: var(--seal-deep);
+  font-size: 11px; font-weight: 700;
+}
+ol.howto { padding-left: 0; list-style: none; display: grid; gap: 6px; font-size: 14px; color: var(--ink-2); counter-reset: ht; }
+ol.howto li { display: flex; gap: 10px; counter-increment: ht; }
+ol.howto li::before {
+  content: counter(ht); flex-shrink: 0; width: 19px; height: 19px; margin-top: 3px;
+  display: grid; place-items: center; font-size: 11px; font-weight: 700;
+  color: var(--ink-2); border: 1px solid var(--line); border-radius: 50%; background: var(--card);
+}
+
+.ans-foot {
+  display: flex; align-items: center; gap: 12px; margin-top: 18px;
+  padding-top: 13px; border-top: 1px dashed var(--line); flex-wrap: wrap;
+}
+.disc { font-size: 12px; color: var(--ink-3); flex: 1; min-width: 130px; }
+.btn-lawyer {
+  font-size: 13px; padding: 8px 16px; border-radius: 8px;
+  border: 1.5px solid var(--seal); color: var(--seal-deep); background: none;
+  font-weight: 600; letter-spacing: .5px; transition: all .15s; white-space: nowrap;
+}
+.btn-lawyer:hover, .btn-lawyer.solid { background: var(--seal); color: #fff8f0; }
+
+.thinking { color: var(--ink-3); font-size: 14px; display: flex; align-items: center; gap: 12px; padding: 18px 22px; }
+.dots { display: flex; gap: 5px; }
+.dots span { width: 7px; height: 7px; border-radius: 50%; background: var(--seal); opacity: .5; animation: ink 1.2s infinite; }
+.dots span:nth-child(2) { animation-delay: .18s; }
+.dots span:nth-child(3) { animation-delay: .36s; }
+@keyframes ink { 0%,60%,100% { transform: none; opacity: .35; } 30% { transform: translateY(-5px); opacity: 1; } }
+
+/* —— 右侧朱批依据面板 —— */
+.aside {
+  position: sticky; top: 86px;
+  background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+  max-height: calc(100vh - 200px); overflow-y: auto;
+  box-shadow: var(--shadow);
+}
+.aside-head {
+  display: flex; align-items: center; gap: 8px;
+  padding: 13px 18px; border-bottom: 1px solid var(--line);
+  font-family: var(--serif); font-size: 14px; font-weight: 700; letter-spacing: 3px;
+  position: sticky; top: 0; background: var(--card); z-index: 2;
+}
+.aside-head::before { content: ""; width: 4px; height: 16px; background: var(--seal); border-radius: 2px; }
+.aside-body { padding: 14px 16px 16px; }
+.aside-empty {
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  padding: 44px 18px; color: var(--ink-3); font-size: 12.5px; text-align: center;
+}
+@media (min-width: 1024px) { .cite-in-msg { display: none; } }
+
+/* —— 提问栏 —— */
+#ask-bar {
+  position: fixed; left: var(--rail-w); right: 0; bottom: 0; z-index: 70;
+  background: color-mix(in srgb, var(--card) 88%, transparent);
+  backdrop-filter: blur(14px);
+  border-top: 1px solid var(--line);
+  padding: 12px 0 calc(12px + env(safe-area-inset-bottom));
+}
+.ask-in { max-width: 1180px; margin: 0 auto; padding: 0 28px; display: flex; gap: 10px; }
+#q {
+  flex: 1; font-size: 16px; font-family: inherit;
+  padding: 12px 16px; border-radius: 12px;
+  border: 1.5px solid var(--line); resize: none; line-height: 1.5;
+  background: var(--card); max-height: 130px;
+  transition: border-color .15s, box-shadow .15s;
+}
+#q:focus { outline: none; border-color: var(--seal); box-shadow: 0 0 0 3px var(--seal-pale); }
+#send {
+  font-size: 15px; padding: 0 26px; border-radius: 12px; border: none;
+  background: var(--seal); color: #fff8f0; font-weight: 600; letter-spacing: 2px;
+  transition: background .15s; white-space: nowrap;
+}
+#send:hover { background: var(--seal-deep); }
+#send:disabled { opacity: .4; cursor: not-allowed; }
+
+/* ============ 计算器 ============ */
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(310px, 1fr)); gap: 18px; }
+.calc {
+  background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+  padding: 22px; box-shadow: var(--shadow); position: relative; overflow: hidden;
+}
+.calc::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--seal) 0 56px, var(--line) 56px); }
+.calc h3 { font-family: var(--serif); font-size: 18px; letter-spacing: 1px; }
+.calc > .muted { margin-top: 5px; }
+.f { display: grid; gap: 5px; margin-top: 12px; font-size: 13px; color: var(--ink-2); }
+.f input, .f select {
+  font-size: 16px; padding: 10px 12px; border-radius: 9px;
+  border: 1.5px solid var(--line); background: var(--paper);
+  font-family: inherit; width: 100%; transition: border-color .15s, box-shadow .15s;
+}
+.f input:focus, .f select:focus { outline: none; border-color: var(--seal); box-shadow: 0 0 0 3px var(--seal-pale); background: var(--card); }
+.f-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.chk { display: flex; align-items: center; gap: 8px; margin-top: 14px; font-size: 14px; color: var(--ink-2); }
+.chk input { accent-color: var(--seal); width: 16px; height: 16px; }
+.btn {
+  margin-top: 16px; width: 100%; font-size: 15px; padding: 12px;
+  border-radius: 10px; border: none; background: var(--ink); color: #f3eee2;
+  font-weight: 600; letter-spacing: 3px; transition: background .15s;
+}
+.btn:hover { background: var(--seal-deep); }
+.calc-out { margin-top: 16px; border-top: 1px dashed var(--line); padding-top: 15px; display: none; }
+.soon { opacity: .68; }
+.soon h3 { color: var(--ink-2); }
+
+/* ============ 文书起草 ============ */
+.doc-grid { display: grid; grid-template-columns: 400px minmax(0,1fr); gap: 24px; align-items: start; }
+.doc-types { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-bottom: 18px; }
+.doc-type {
+  text-align: left; padding: 11px 13px; border-radius: 11px;
+  border: 1.5px solid var(--line); background: var(--card);
+  transition: all .15s; box-shadow: 0 1px 2px rgba(60,48,30,.04);
+}
+.doc-type b { display: block; font-family: var(--serif); font-size: 13.5px; color: var(--ink); }
+.doc-type small { display: block; font-size: 11.5px; color: var(--ink-3); margin-top: 2px; line-height: 1.5; }
+.doc-type:hover { border-color: var(--seal); transform: translateY(-1px); }
+.doc-type.on { border-color: var(--seal); background: var(--seal-pale); box-shadow: 0 0 0 2.5px var(--seal-pale); }
+.doc-type.on b { color: var(--seal-deep); }
+.doc-form-card {
+  background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+  padding: 20px; box-shadow: var(--shadow); position: relative; overflow: hidden;
+}
+.doc-form-card::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--seal) 0 56px, var(--line) 56px); }
+.doc-form-card h3 { font-family: var(--serif); font-size: 17px; }
+.doc-form-card textarea {
+  font-size: 15px; padding: 10px 12px; border-radius: 9px;
+  border: 1.5px solid var(--line); background: var(--paper);
+  font-family: inherit; width: 100%; min-height: 74px; resize: vertical;
+  line-height: 1.6; transition: border-color .15s, box-shadow .15s;
+}
+.doc-form-card textarea:focus { outline: none; border-color: var(--seal); box-shadow: 0 0 0 3px var(--seal-pale); background: var(--card); }
+.req-star { color: var(--seal); }
+/* 公文纸输出 */
+.doc-paper {
+  background: #fffefb; border: 1px solid var(--line); border-radius: 4px;
+  padding: 44px 46px 38px; box-shadow: var(--shadow-lg);
+  position: relative; overflow: hidden;
+  font-family: var(--serif); font-size: 15.5px; line-height: 2.1; color: #2a2620;
+  white-space: pre-wrap;
+  animation: msgIn .4s cubic-bezier(.2,.7,.3,1) both;
+}
+.doc-paper::before {  /* 红头线 */
+  content: ""; position: absolute; top: 26px; left: 46px; right: 46px; height: 2.5px;
+  background: var(--seal); opacity: .75;
+}
+.doc-paper::after {  /* 草稿水印 */
+  content: "草 稿"; position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%,-50%) rotate(-24deg);
+  font-size: 150px; font-weight: 800; letter-spacing: 30px;
+  color: var(--seal); opacity: .045; pointer-events: none; white-space: nowrap;
+}
+.doc-toolbar { display: flex; gap: 9px; margin: 14px 0; flex-wrap: wrap; }
+.doc-btn {
+  font-size: 13px; padding: 8px 16px; border-radius: 8px;
+  border: 1.5px solid var(--line); background: var(--card); color: var(--ink-2);
+  font-weight: 600; transition: all .15s;
+}
+.doc-btn:hover { border-color: var(--seal); color: var(--seal-deep); }
+@media (max-width: 1023px) {
+  .doc-grid { grid-template-columns: 1fr; }
+  .doc-paper { padding: 30px 22px 26px; font-size: 14.5px; }
+  .doc-paper::before { left: 22px; right: 22px; top: 16px; }
+}
+
+/* ============ AI 律师审核 ============ */
+.review-banner {
+  display: flex; align-items: center; gap: 15px;
+  border: 1.5px solid; border-radius: 12px; padding: 13px 17px; margin-top: 22px;
+  animation: msgIn .35s cubic-bezier(.2,.7,.3,1) both;
+}
+.rv-pass   { border-color: var(--green); background: var(--green-bg); color: var(--green); }
+.rv-revise { border-color: var(--gold);  background: var(--gold-bg);  color: var(--gold); }
+.rv-block  { border-color: var(--seal);  background: var(--seal-pale); color: var(--seal-deep); }
+.rv-seal {
+  flex-shrink: 0; width: 46px; height: 46px;
+  display: grid; place-items: center;
+  font-family: var(--serif); font-size: 19px; font-weight: 800;
+  border: 2px solid currentColor; border-radius: 8px; transform: rotate(-3deg);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, currentColor 45%, transparent);
+}
+.rv-title { font-family: var(--serif); font-size: 16.5px; font-weight: 700; }
+.rv-sum { font-size: 13px; opacity: .85; margin-top: 2px; }
+.finding {
+  border-left: 3px solid; border-radius: 0 9px 9px 0;
+  background: var(--card); box-shadow: var(--shadow);
+  padding: 11px 14px; margin-top: 9px;
+}
+.f-blocker { border-color: var(--seal); }
+.f-risk    { border-color: var(--gold); }
+.f-polish  { border-color: var(--ink-3); }
+.finding b { font-size: 14px; }
+.finding .fd { font-size: 13px; color: var(--ink-2); margin-top: 3px; max-width: 64ch; }
+.finding .fx { font-size: 13px; margin-top: 5px; padding-left: 20px; position: relative; max-width: 64ch; }
+.finding .fx::before { content: "改"; position: absolute; left: 0; top: 2.5px; font-size: 10px;
+  width: 15px; height: 15px; display: grid; place-items: center; border-radius: 3px;
+  background: var(--green-bg); color: var(--green); font-weight: 700; }
+.sev-chip { font-size: 11px; padding: 1px 8px; border-radius: 3px; margin-right: 7px; font-weight: 600; vertical-align: 1px; }
+.sev-blocker { background: var(--seal-pale); color: var(--seal-deep); }
+.sev-risk    { background: var(--gold-bg); color: var(--gold); }
+.sev-polish  { background: var(--paper-2); color: var(--ink-2); }
+.checklist { margin-top: 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); }
+.checklist summary { cursor: pointer; padding: 11px 15px; font-size: 13.5px; font-weight: 600; list-style: none; }
+.checklist summary::-webkit-details-marker { display: none; }
+.checklist ul { list-style: none; padding: 2px 15px 13px; display: grid; gap: 7px; }
+.checklist li { font-size: 13px; color: var(--ink-2); padding-left: 24px; position: relative; max-width: 66ch; }
+.checklist li::before {
+  position: absolute; left: 0; top: 1px; width: 16px; height: 16px;
+  display: grid; place-items: center; border-radius: 4px; font-size: 11px; font-weight: 800;
+}
+.checklist li.ck-ok::before { content: "✓"; background: var(--green-bg); color: var(--green); }
+.checklist li.ck-no::before { content: "✗"; background: var(--seal-pale); color: var(--seal-deep); }
+.checklist li small { color: var(--ink-3); }
+
+/* ============ 案例库 ============ */
+.filter-bar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 18px; }
+.filter-bar select {
+  font-size: 14px; padding: 8px 13px; border-radius: 9px;
+  border: 1.5px solid var(--line); background: var(--card); color: var(--ink);
+  font-family: inherit;
+}
+.filter-bar select:focus { outline: none; border-color: var(--seal); }
+.case-cards { display: grid; gap: 15px; }
+.case-card {
+  background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+  padding: 20px 22px; box-shadow: var(--shadow);
+  display: flex; gap: 18px; transition: transform .18s, box-shadow .18s;
+}
+.case-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+.case-seal {
+  flex-shrink: 0; width: 52px; height: 52px;
+  display: grid; place-items: center;
+  font-family: var(--serif); font-size: 19px; font-weight: 800;
+  border: 2px solid currentColor; border-radius: 8px;
+  transform: rotate(-3deg);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, currentColor 45%, transparent);
+}
+.cs-er { color: var(--ink-2); } .cs-ee { color: var(--green); } .cs-pt { color: var(--gold); }
+.case-body { flex: 1; min-width: 0; }
+.case-title { font-family: var(--serif); font-size: 16.5px; font-weight: 700; max-width: 42ch; }
+.case-meta { font-size: 12.5px; color: var(--ink-3); display: flex; gap: 12px; flex-wrap: wrap; margin-top: 5px; }
+.case-gist { font-size: 14px; color: var(--ink-2); max-width: 56ch; margin-top: 9px; line-height: 1.75; }
+.case-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 11px; }
+.tagchip { font-size: 11.5px; padding: 2px 9px; border-radius: 4px; background: var(--paper-2); color: var(--ink-2); }
+
+/* ============ 词条 ============ */
+.list { display: grid; gap: 12px; }
+.entry-item {
+  background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+  padding: 18px 20px; cursor: pointer; box-shadow: var(--shadow);
+  transition: transform .18s, box-shadow .18s, border-color .18s;
+}
+.entry-item:hover { transform: translateY(-2px); border-color: var(--seal); box-shadow: var(--shadow-lg); }
+.entry-item h3 { font-family: var(--serif); font-size: 16.5px; }
+.detail-card {
+  background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+  padding: 22px; box-shadow: var(--shadow); position: relative; overflow: hidden;
+}
+.detail-card::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--seal) 0 56px, var(--line) 56px); }
+.detail-card h3 { font-family: var(--serif); font-size: 19px; }
+
+/* ============ 知识库 ============ */
+.note {
+  border-left: 3px solid var(--ink-2);
+  background: var(--card); border-radius: 0 10px 10px 0;
+  padding: 13px 17px; font-size: 13.5px; color: var(--ink-2);
+  margin-bottom: 18px; box-shadow: var(--shadow);
+}
+.note code { background: var(--paper-2); padding: 1px 7px; border-radius: 5px; font-size: 12.5px; white-space: nowrap; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(126px, 1fr)); gap: 12px; }
+.stat {
+  background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+  padding: 14px 16px; box-shadow: var(--shadow);
+}
+.stat .v { font-family: var(--serif); font-size: 27px; font-weight: 800; line-height: 1.2; }
+.stat .l { font-size: 12px; color: var(--ink-3); margin-top: 2px; letter-spacing: .5px; }
+.sec-title {
+  font-family: var(--serif); font-size: 18px; letter-spacing: 2px;
+  margin: 28px 0 12px; display: flex; align-items: center; gap: 10px;
+}
+.sec-title::before { content: ""; width: 4px; height: 17px; background: var(--seal); border-radius: 2px; }
+.count-tag { font-size: 12px; font-family: var(--sans); font-weight: 400; letter-spacing: 0; color: var(--ink-3); background: var(--paper-2); padding: 2px 10px; border-radius: 999px; }
+.tbl-wrap { overflow-x: auto; background: var(--card); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; min-width: 580px; }
+th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line-2); vertical-align: top; }
+th { color: var(--ink-3); font-weight: 600; font-size: 12px; letter-spacing: 1px; background: var(--paper-2); white-space: nowrap; }
 tr:last-child td { border-bottom: none; }
-.art-text { color: var(--ink-2); max-width: 56ch; }
-.note { background: var(--accent-soft); border: 1px solid #cfdcf2; border-radius: var(--r);
-  padding: 12px 14px; font-size: 13.5px; color: #2a4a80; }
-.note code { background: #fff; padding: 1px 6px; border-radius: 5px; font-size: 12.5px; white-space: nowrap; }
-footer { border-top: 1px solid var(--line); padding: 16px 0 110px; margin-top: 30px; }
+tbody tr:hover td, tr:hover td { background: color-mix(in srgb, var(--paper-2) 40%, transparent); }
+.art-text { color: var(--ink-2); max-width: 50ch; }
 
-@media (max-width: 700px) {
+/* ============ 空态 ============ */
+.empty-state {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 56px 24px; text-align: center; color: var(--ink-3); gap: 16px;
+}
+.empty-state p { font-size: 14px; max-width: 28ch; }
+
+footer { margin-top: 44px; padding-top: 18px; border-top: 1px solid var(--line); }
+footer p { font-size: 12.5px; color: var(--ink-3); max-width: 56ch; }
+
+/* ============ 移动端 ============ */
+@media (max-width: 1023px) {
+  .chat-grid { grid-template-columns: 1fr; }
+  .aside { display: none; }
+}
+@media (max-width: 767px) {
   body { font-size: 14.5px; }
-  .brand { font-size: 21px; }
-  .head-right { width: 100%; margin-left: 0; }
-  .nav-in button { font-size: 14px; padding: 11px 2px; }
-  .f-row { grid-template-columns: 1fr; }
-  .m-user { max-width: 95%; }
-  table { min-width: 480px; }
+  #rail {
+    top: auto; bottom: 0; left: 0; right: 0; width: auto; height: var(--tabbar-h);
+    flex-direction: row; justify-content: space-around; align-items: stretch;
+    padding: 0 4px env(safe-area-inset-bottom);
+  }
+  .seal-logo, .rail-foot { display: none; }
+  .rail-nav { flex-direction: row; flex: 1; gap: 0; }
+  .rail-btn { flex: 1; padding: 8px 0 6px; gap: 3px; font-size: 10.5px; border-left: none !important; border-top: 3px solid transparent; }
+  .rail-btn svg { width: 20px; height: 20px; }
+  .rail-btn.on { border-top-color: var(--seal); background: linear-gradient(180deg, rgba(189,58,44,.16), transparent 75%); }
+  #main { margin-left: 0; padding-bottom: var(--tabbar-h); }
+  .topbar { padding: 12px 16px 11px; }
+  .view-title { font-size: 18px; }
+  .view-sub { display: none; }
+  .wrap { padding: 16px 16px 130px; }
+  #ask-bar { left: 0; bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom)); padding: 9px 0; }
+  .ask-in { padding: 0 12px; gap: 8px; }
+  #send { padding: 0 18px; letter-spacing: 0; }
+  .m-user { max-width: 92%; }
+  .ans { padding: 16px; border-radius: 12px; }
+  .concl { font-size: 16px; }
+  .stamp-num { font-size: 25px; }
+  .f-row { grid-template-columns: 1fr; gap: 0; }
+  .case-card { padding: 16px; gap: 13px; }
+  .case-seal { width: 44px; height: 44px; font-size: 16px; }
+  table { min-width: 520px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
 }
 </style>
 </head>
 <body>
 <div class="app">
 
-<header>
-  <div class="wrap head-in">
-    <div class="brand">劳法通 <small>· 劳动法智能百科</small></div>
-    <span class="tag">LDLAWQ · M0 内部演示</span>
-    <div class="head-right">
-      <span id="llm-badge">…</span>
-      <label for="region">用工地区</label>
-      <select id="region">
-        <option>上海</option><option>江苏</option><option>浙江</option>
-        <option>北京</option><option>天津</option><option>河北</option>
-        <option>广东</option><option>广州</option><option>深圳</option>
-      </select>
+<!-- ============ SVG 素材库 ============ -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+  <!-- 导航图标 -->
+  <symbol id="i-chat" viewBox="0 0 24 24">
+    <path d="M21 14.5a2.5 2.5 0 0 1-2.5 2.5H8l-5 5V5.5A2.5 2.5 0 0 1 5.5 3h13A2.5 2.5 0 0 1 21 5.5z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+    <line x1="8" y1="9" x2="16" y2="9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+    <line x1="8" y1="13" x2="13" y2="13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="i-calc" viewBox="0 0 24 24">
+    <rect x="4" y="2.5" width="16" height="19" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.7"/>
+    <rect x="7.5" y="6" width="9" height="3.5" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/>
+    <circle cx="8.5" cy="13.5" r="1.1" fill="currentColor"/><circle cx="12" cy="13.5" r="1.1" fill="currentColor"/><circle cx="15.5" cy="13.5" r="1.1" fill="currentColor"/>
+    <circle cx="8.5" cy="17.5" r="1.1" fill="currentColor"/><circle cx="12" cy="17.5" r="1.1" fill="currentColor"/><circle cx="15.5" cy="17.5" r="1.1" fill="currentColor"/>
+  </symbol>
+  <symbol id="i-case" viewBox="0 0 24 24">
+    <path d="M12 3l2.1 4.3 4.7.7-3.4 3.3.8 4.7-4.2-2.2-4.2 2.2.8-4.7L5.2 8l4.7-.7z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" transform="translate(0,-1) scale(.82) translate(2.6,2.6)"/>
+    <line x1="5" y1="21" x2="19" y2="21" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+    <line x1="12" y1="16.5" x2="12" y2="21" stroke="currentColor" stroke-width="1.6"/>
+  </symbol>
+  <symbol id="i-book" viewBox="0 0 24 24">
+    <path d="M5 4a2 2 0 0 1 2-2h12v17.5H7A2 2 0 0 0 5 21.5z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+    <path d="M5 21.5A2 2 0 0 1 7 19.5h12V22H7a2 2 0 0 1-2-2z" fill="none" stroke="currentColor" stroke-width="1.5"/>
+    <line x1="9.5" y1="6.5" x2="15.5" y2="6.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="i-db" viewBox="0 0 24 24">
+    <ellipse cx="12" cy="5.5" rx="8" ry="3" fill="none" stroke="currentColor" stroke-width="1.7"/>
+    <path d="M4 5.5v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6" fill="none" stroke="currentColor" stroke-width="1.7"/>
+    <path d="M4 11.5v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6" fill="none" stroke="currentColor" stroke-width="1.7"/>
+  </symbol>
+  <symbol id="i-pen" viewBox="0 0 24 24">
+    <path d="M4 20l1.2-4.2L16.6 4.4a2.05 2.05 0 0 1 2.9 2.9L8.2 18.7 4 20z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+    <line x1="14.2" y1="6.8" x2="17.1" y2="9.7" stroke="currentColor" stroke-width="1.5"/>
+    <line x1="12" y1="20" x2="20" y2="20" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24">
+    <path d="M12 21s-7-5.3-7-11a7 7 0 0 1 14 0c0 5.7-7 11-7 11z" fill="none" stroke="currentColor" stroke-width="1.7"/>
+    <circle cx="12" cy="10" r="2.6" fill="none" stroke="currentColor" stroke-width="1.6"/>
+  </symbol>
+  <!-- 大幅插画 · 天平 -->
+  <symbol id="il-scales" viewBox="0 0 96 96">
+    <line x1="48" y1="12" x2="48" y2="80" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="48" cy="9" r="3" fill="none" stroke="currentColor" stroke-width="2.4"/>
+    <line x1="18" y1="20" x2="78" y2="20" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+    <line x1="18" y1="20" x2="10" y2="42" stroke="currentColor" stroke-width="2"/>
+    <line x1="18" y1="20" x2="26" y2="42" stroke="currentColor" stroke-width="2"/>
+    <path d="M10 42a11 11 0 0 0 16 0z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+    <line x1="78" y1="20" x2="70" y2="42" stroke="currentColor" stroke-width="2"/>
+    <line x1="78" y1="20" x2="86" y2="42" stroke="currentColor" stroke-width="2"/>
+    <path d="M70 42a11 11 0 0 0 16 0z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+    <line x1="34" y1="80" x2="62" y2="80" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+  </symbol>
+  <!-- 大幅插画 · 法槌 -->
+  <symbol id="il-gavel" viewBox="0 0 96 96">
+    <rect x="34" y="10" width="22" height="36" rx="6" transform="rotate(-45 45 28)" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>
+    <rect x="12" y="32" width="22" height="18" rx="5" transform="rotate(-45 23 41)" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>
+    <line x1="52" y1="54" x2="80" y2="82" stroke="currentColor" stroke-width="4.5" stroke-linecap="round"/>
+    <line x1="10" y1="84" x2="44" y2="84" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+  </symbol>
+  <!-- 大幅插画 · 卷宗 -->
+  <symbol id="il-scroll" viewBox="0 0 96 96">
+    <path d="M24 14h40a8 8 0 0 1 8 8v52a8 8 0 0 0-8-8H24z" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M24 14a8 8 0 0 0-8 8v52a8 8 0 0 1 8-8" fill="none" stroke="currentColor" stroke-width="3"/>
+    <line x1="34" y1="30" x2="60" y2="30" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+    <line x1="34" y1="42" x2="60" y2="42" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+    <line x1="34" y1="54" x2="50" y2="54" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+  </symbol>
+</svg>
+
+<!-- ============ 书脊导航 ============ -->
+<aside id="rail">
+  <div class="seal-logo">
+    <svg width="46" height="46" viewBox="0 0 46 46" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="劳法通">
+      <rect x="1.5" y="1.5" width="43" height="43" rx="7" fill="#bd3a2c"/>
+      <rect x="4.5" y="4.5" width="37" height="37" rx="4.5" fill="none" stroke="#f7f3ea" stroke-width="1.3" opacity=".85"/>
+      <text x="23" y="20" text-anchor="middle" font-family="Songti SC,serif" font-size="13.5" font-weight="800" fill="#f7f3ea">劳法</text>
+      <text x="23" y="36" text-anchor="middle" font-family="Songti SC,serif" font-size="13.5" font-weight="800" fill="#f7f3ea">通印</text>
+    </svg>
+  </div>
+  <nav class="rail-nav">
+    <button class="rail-btn on" data-v="chat"><svg><use href="#i-chat"/></svg>问答</button>
+    <button class="rail-btn" data-v="doc"><svg><use href="#i-pen"/></svg>文书</button>
+    <button class="rail-btn" data-v="calc"><svg><use href="#i-calc"/></svg>算钱</button>
+    <button class="rail-btn" data-v="cases"><svg><use href="#i-case"/></svg>案例</button>
+    <button class="rail-btn" data-v="entries"><svg><use href="#i-book"/></svg>词条</button>
+    <button class="rail-btn" data-v="db"><svg><use href="#i-db"/></svg>法库</button>
+  </nav>
+  <div class="rail-foot">
+    <span class="llm-dot" id="llm-dot" title="LLM 状态"></span>
+    <small id="llm-text">检测中</small>
+  </div>
+</aside>
+
+<!-- ============ 主区 ============ -->
+<div id="main">
+  <div class="topbar">
+    <div>
+      <div class="view-title" id="view-title">智能问答</div>
+      <div class="view-sub" id="view-sub">六道防线 · 只依据库内法条作答 · 算不准就转律师</div>
+    </div>
+    <div class="topbar-right">
+      <label class="region-wrap">
+        <svg width="14" height="14" color="var(--seal)"><use href="#i-pin"/></svg>
+        <select id="region">
+          <option>上海</option><option>江苏</option><option>浙江</option>
+          <option>北京</option><option>天津</option><option>河北</option>
+          <option>广东</option><option>广州</option><option>深圳</option>
+        </select>
+      </label>
     </div>
   </div>
-</header>
 
-<nav><div class="wrap nav-in">
-  <button data-v="chat" class="on">智能问答</button>
-  <button data-v="calc">计算器</button>
-  <button data-v="entries">百科词条</button>
-  <button data-v="db">知识库</button>
-</div></nav>
+  <div class="wrap">
 
-<main class="wrap">
-
-  <!-- 问答 -->
-  <section id="v-chat" class="view on">
-    <div class="chips" id="chips">
-      <button>员工 2023 年 6 月入职，月薪 15,000 元，协商解除要给多少补偿？</button>
-      <button>协商解除需要给 N+1 吗？</button>
-      <button>入职两个月还没签劳动合同，有什么风险？</button>
-      <button>员工拒绝调岗能直接辞退吗？</button>
-    </div>
-    <div id="msgs"></div>
-  </section>
-
-  <!-- 计算器 -->
-  <section id="v-calc" class="view">
-    <div class="grid">
-      <div class="card calc">
-        <h3>经济补偿金（N / 2N）</h3>
-        <p class="muted pretty">依据《劳动合同法》第四十六、四十七条；违法解除按第八十七条二倍计算。</p>
-        <div class="f-row">
-          <label class="f">入职日期<input type="date" id="s-hire" value="2023-06-01"></label>
-          <label class="f">离职日期<input type="date" id="s-term"></label>
+    <!-- 问答 -->
+    <section id="v-chat" class="view on">
+      <div class="chat-grid">
+        <div class="chat-main">
+          <div class="chips-label">常 见 问 题</div>
+          <div class="chips" id="chips">
+            <button class="chip">员工 2023 年 6 月入职，月薪 15,000 元，协商解除要给多少补偿？</button>
+            <button class="chip">协商解除需要给 N+1 吗？</button>
+            <button class="chip">员工休病假期间能开除吗？</button>
+            <button class="chip">入职两个月还没签劳动合同，有什么风险？</button>
+          </div>
+          <div id="msgs">
+            <div class="empty-state" id="chat-empty">
+              <svg width="84" height="84" viewBox="0 0 96 96" style="color:var(--line)" fill="none"><use href="#il-scales"/></svg>
+              <p>描述用工情况，AI 检索法条精准作答<br>金额测算永远走代码，不靠模型猜</p>
+            </div>
+          </div>
         </div>
-        <div class="f-row">
-          <label class="f">月平均应发工资（元）<input type="number" id="s-wage" value="15000" min="0"></label>
-          <label class="f">用工城市<select id="s-region"></select></label>
+        <div class="aside">
+          <div class="aside-head">法条依据</div>
+          <div class="aside-body" id="aside-body">
+            <div class="aside-empty">
+              <svg width="56" height="56" viewBox="0 0 96 96" style="color:var(--line)" fill="none"><use href="#il-scroll"/></svg>
+              <span>回答后引用的法条原文<br>将在此处展示</span>
+            </div>
+          </div>
         </div>
-        <label class="chk"><input type="checkbox" id="s-2n">按违法解除计算赔偿金（2N）</label>
-        <button class="btn" id="s-go">计算</button>
-        <div class="calc-out" id="s-out"></div>
       </div>
+    </section>
 
-      <div class="card calc">
-        <h3>离职未休年假折算</h3>
-        <p class="muted pretty">依据《职工带薪年休假条例》及实施办法，300% 口径含正常工资。</p>
-        <div class="f-row">
-          <label class="f">月工资（元）<input type="number" id="a-wage" value="8700" min="0"></label>
-          <label class="f">累计工龄（年）<input type="number" id="a-years" value="12" min="0"></label>
+    <!-- 文书起草 -->
+    <section id="v-doc" class="view">
+      <div class="doc-grid">
+        <div class="doc-form-col">
+          <div class="chips-label">文 书 类 型</div>
+          <div class="doc-types" id="doc-types"><div class="muted">加载中…</div></div>
+          <div class="doc-form-card">
+            <h3 id="doc-form-title" class="balance">—</h3>
+            <p class="muted pretty" id="doc-form-desc"></p>
+            <div id="doc-fields"></div>
+            <button class="btn" id="doc-go">生 成 文 书</button>
+          </div>
         </div>
-        <div class="f-row">
-          <label class="f">今年已休年假（天）<input type="number" id="a-taken" value="0" min="0"></label>
-          <label class="f">离职日期<input type="date" id="a-term"></label>
+        <div class="doc-out-col" id="doc-out">
+          <div class="empty-state" style="padding-top:90px">
+            <svg width="80" height="80" viewBox="0 0 96 96" style="color:var(--line)" fill="none"><use href="#il-scroll"/></svg>
+            <p>选择文书类型、填写要素后生成<br>AI 初稿基于库内法条起草，引用自动核验</p>
+          </div>
         </div>
-        <button class="btn" id="a-go">计算</button>
-        <div class="calc-out" id="a-out"></div>
       </div>
+    </section>
 
-      <div class="card calc soon">
-        <h3>更多计算器 · M1 排期</h3>
-        <p class="muted pretty">加班费（1.5 / 2 / 3 倍）、病假工资与医疗期、产假与生育津贴、试用期合法性、竞业限制补偿、渐进式延迟退休测算。</p>
-        <p class="muted pretty" style="margin-top:8px">全部为确定性规则计算——AI 只负责问清参数，算钱永远走代码。</p>
+    <!-- 计算器 -->
+    <section id="v-calc" class="view">
+      <div class="grid">
+        <div class="calc">
+          <h3>经济补偿金 N / 2N</h3>
+          <p class="muted pretty">《劳动合同法》第四十六、四十七条；违法解除按第八十七条二倍。</p>
+          <div class="f-row">
+            <label class="f">入职日期<input type="date" id="s-hire" value="2023-06-01"></label>
+            <label class="f">离职日期<input type="date" id="s-term"></label>
+          </div>
+          <div class="f-row">
+            <label class="f">月平均应发工资（元）<input type="number" id="s-wage" value="15000" min="0"></label>
+            <label class="f">用工城市<select id="s-region"></select></label>
+          </div>
+          <label class="chk"><input type="checkbox" id="s-2n">按违法解除计算赔偿金（2N）</label>
+          <button class="btn" id="s-go">计 算</button>
+          <div class="calc-out" id="s-out"></div>
+        </div>
+
+        <div class="calc">
+          <h3>离职未休年假折算</h3>
+          <p class="muted pretty">《职工带薪年休假条例》及实施办法；企业额外应补 200% 口径。</p>
+          <div class="f-row">
+            <label class="f">月工资（元）<input type="number" id="a-wage" value="8700" min="0"></label>
+            <label class="f">累计工龄（年）<input type="number" id="a-years" value="12" min="0"></label>
+          </div>
+          <div class="f-row">
+            <label class="f">今年已休年假（天）<input type="number" id="a-taken" value="0" min="0"></label>
+            <label class="f">离职日期<input type="date" id="a-term"></label>
+          </div>
+          <label class="f">入职日期（当年入职才填）<input type="date" id="a-hire"></label>
+          <button class="btn" id="a-go">计 算</button>
+          <div class="calc-out" id="a-out"></div>
+        </div>
+
+        <div class="calc soon">
+          <h3>更多计算器 · M1 排期</h3>
+          <p class="muted pretty">加班费（1.5 / 2 / 3 倍）、病假工资与医疗期、产假与生育津贴、试用期合法性、竞业限制补偿、延迟退休测算。</p>
+          <p class="muted pretty" style="margin-top:9px">全部为确定性规则计算——AI 只负责问清参数，算钱永远走代码。</p>
+        </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- 词条 -->
-  <section id="v-entries" class="view">
-    <div class="list" id="entry-list"><div class="muted">加载中…</div></div>
-    <div id="entry-detail" style="margin-top:14px"></div>
-  </section>
+    <!-- 案例库 -->
+    <section id="v-cases" class="view">
+      <div class="filter-bar">
+        <select id="case-tag">
+          <option value="">全部争议类型</option>
+          <option>违法解除</option><option>未签合同二倍工资</option>
+          <option>调岗调薪</option><option>加班费</option><option>竞业限制</option>
+          <option>三期女职工</option><option>年休假</option><option>经济补偿</option>
+          <option>规章制度</option><option>工伤</option><option>劳动报酬</option>
+          <option>劳动关系确认</option>
+        </select>
+        <select id="case-region">
+          <option value="">全部地区</option>
+          <option>上海</option><option>江苏</option><option>浙江</option>
+          <option>北京</option><option>天津</option><option>广东</option>
+        </select>
+        <button class="chip" id="case-load">筛 选</button>
+      </div>
+      <div class="case-cards" id="case-cards"></div>
+    </section>
 
-  <!-- 知识库 -->
-  <section id="v-db" class="view">
-    <div class="note" style="margin-bottom:14px">
-      数据库为<strong>双库架构</strong>：<code>db/knowledge.db</code>（法规 / 词条 / 参数，只读，整库替换发布）
-      ＋ <code>db/app.db</code>（问答日志 / 转介工单，WAL 读写）。本页内容实时读自 knowledge.db。
-    </div>
-    <div class="stats" id="db-stats"></div>
-    <h3 class="sec-title">法规库 <span class="badge b-gray" id="src-count"></span></h3>
-    <div class="tbl-wrap"><table id="tbl-sources"></table></div>
-    <h3 class="sec-title">法条（引用校验基准表）<span class="badge b-gray" id="art-count"></span></h3>
-    <div class="tbl-wrap"><table id="tbl-articles"></table></div>
-    <h3 class="sec-title">地区参数（计算器数据源）<span class="badge b-gray" id="param-count"></span></h3>
-    <div class="tbl-wrap"><table id="tbl-params"></table></div>
-    <h3 class="sec-title">覆盖地区</h3>
-    <div class="tbl-wrap"><table id="tbl-regions"></table></div>
-  </section>
+    <!-- 词条 -->
+    <section id="v-entries" class="view">
+      <div class="list" id="entry-list"><div class="muted">加载中…</div></div>
+      <div id="entry-detail" style="margin-top:15px"></div>
+    </section>
 
-  <footer class="muted pretty">
-    本系统输出内容仅供参考，不构成法律意见；具体个案请咨询执业律师。
-    演示版法条与参数未经官方源核验（界面已逐项标 ⚠），生产发布门槛为未核验数 = 0。
-  </footer>
-</main>
+    <!-- 知识库 -->
+    <section id="v-db" class="view">
+      <div class="note">
+        <strong>双库架构</strong>　<code>knowledge.db</code>（法规 / 词条 / 参数，只读，整库替换发布）＋
+        <code>app.db</code>（问答日志 / 转介工单，WAL 读写）。本页数据实时读自 knowledge.db。
+      </div>
+      <div class="stats" id="db-stats"></div>
+      <h3 class="sec-title">法规库 <span class="count-tag" id="src-count"></span></h3>
+      <div class="tbl-wrap"><table id="tbl-sources"></table></div>
+      <h3 class="sec-title">法条 · 引用校验基准 <span class="count-tag" id="art-count"></span></h3>
+      <div class="tbl-wrap"><table id="tbl-articles"></table></div>
+      <h3 class="sec-title">地区参数 <span class="count-tag" id="param-count"></span></h3>
+      <div class="tbl-wrap"><table id="tbl-params"></table></div>
+      <h3 class="sec-title">覆盖地区</h3>
+      <div class="tbl-wrap"><table id="tbl-regions"></table></div>
+    </section>
 
-<div id="ask-bar"><div class="wrap ask-in">
-  <textarea id="q" rows="1" placeholder="描述你的情况，例如：苏州员工工作 3 年 7 个月，月薪 8,500 元，想协商解除…"></textarea>
+    <footer>
+      <p class="pretty">本系统输出内容仅供参考，不构成法律意见；具体个案请咨询执业律师。
+      演示版法条与参数未经官方源核验（界面已逐项标注），生产发布门槛为未核验数 = 0。</p>
+    </footer>
+  </div>
+</div>
+
+<!-- 提问栏 -->
+<div id="ask-bar"><div class="ask-in">
+  <textarea id="q" rows="1" placeholder="描述情况，例：苏州员工工作 3 年 7 个月，月薪 8,500 元，协商解除…"></textarea>
   <button id="send">发送</button>
 </div></div>
 
-</div>
+</div><!-- .app -->
 <script>
+'use strict';
 const $ = s => document.querySelector(s);
-const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const nf = n => Number(n).toLocaleString("zh-CN", {maximumFractionDigits: 2});
-const api = (p, body) => fetch(p, body ? {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(body)} : {}).then(r => r.json());
-const region = () => $("#region").value;
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c =>
+  ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const nf = n => Number(n).toLocaleString('zh-CN', {maximumFractionDigits: 2});
+// Safari sandbox iframe 中相对路径 fetch 会失败；origin 无效时回退到已知端口
+const _base = (() => {
+  try {
+    const o = location.origin;
+    return (o && o !== 'null' && /^https?:/.test(o)) ? o : 'http://127.0.0.1:8400';
+  } catch(e) { return 'http://127.0.0.1:8400'; }
+})();
+const api = (p, body) => fetch(_base + p, body
+  ? {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)}
+  : {}).then(r => r.json());
+const region = () => $('#region').value;
 
 /* —— 导航 —— */
-document.querySelectorAll(".nav-in button").forEach(b => b.onclick = () => {
-  document.querySelectorAll(".nav-in button").forEach(x => x.classList.remove("on"));
-  document.querySelectorAll(".view").forEach(x => x.classList.remove("on"));
-  b.classList.add("on");
-  $("#v-" + b.dataset.v).classList.add("on");
-  $("#ask-bar").style.display = b.dataset.v === "chat" ? "" : "none";
+const VIEW_META = {
+  chat:    ['智能问答', '六道防线 · 只依据库内法条作答 · 算不准就转律师'],
+  doc:     ['文书起草', 'AI 生成初稿 · 引用库内法条自动核验 · 务必律师审核后使用'],
+  calc:    ['计算器', '确定性规则计算 · 金额永远走代码'],
+  cases:   ['案例库', '官方公开发布案例 · 标注裁判倾向，不替代法条'],
+  entries: ['百科词条', '律师审核的结构化知识 · 优先于生成回答'],
+  db:      ['知识库', '只读法规库 · 引用校验的唯一基准'],
+};
+let casesLoaded = false;
+document.querySelectorAll('.rail-btn').forEach(b => b.onclick = () => {
+  document.querySelectorAll('.rail-btn').forEach(x => x.classList.remove('on'));
+  document.querySelectorAll('.view').forEach(x => x.classList.remove('on'));
+  b.classList.add('on');
+  const v = b.dataset.v;
+  $('#v-' + v).classList.add('on');
+  const [t, s] = VIEW_META[v];
+  $('#view-title').textContent = t;
+  $('#view-sub').textContent = s;
+  $('#ask-bar').style.display = v === 'chat' ? '' : 'none';
+  if (v === 'cases' && !casesLoaded) loadCases();
+  if (v === 'doc' && !docTypes.length) loadDocTypes();
 });
 
-/* —— 问答 —— */
-const ROUTE_LABEL = {calculator:["计算器 · 确定性计算","b-blue"], entry_hit:["命中百科词条","b-ok"],
-  rag:["检索生成 · 已过双重校验","b-blue"], clarify:["要素确认","b-gray"], refuse:["拒答 · 建议转律师","b-danger"]};
-
+/* —— 引用渲染 —— */
 function citeHtml(c) {
-  const clause = c.clause ? `第${esc(c.clause)}款` : "";
-  const flag = c.verified ? "" : ` <span class="badge b-warn">⚠ 待核验</span>`;
-  return `<details class="cite"><summary>《${esc(c.source)}》${esc(c.article)}${clause}${flag}</summary>
-    <blockquote>${esc(c.text)}</blockquote></details>`;
+  const clause = c.clause ? `第${esc(c.clause)}款` : '';
+  const v = c.verified
+    ? '<span class="v-tag v-ok">已核验</span>'
+    : '<span class="v-tag v-warn">待核验</span>';
+  return `<details class="cite">
+    <summary><span class="cite-src">《${esc(c.source)}》</span>
+      <span class="cite-art">${esc(c.article)}${clause}</span>${v}<span class="tg">▸</span></summary>
+    <blockquote class="pretty">${esc(c.text)}</blockquote>
+  </details>`;
+}
+function updateAside(citations) {
+  const body = $('#aside-body');
+  if (!citations || !citations.length) {
+    body.innerHTML = `<div class="aside-empty">
+      <svg width="56" height="56" viewBox="0 0 96 96" style="color:var(--line)" fill="none"><use href="#il-scroll"/></svg>
+      <span>回答后引用的法条原文<br>将在此处展示</span></div>`;
+    return;
+  }
+  body.innerHTML = `<div style="display:grid;gap:8px">${citations.map(citeHtml).join('')}</div>`;
 }
 
+/* —— 回答渲染 —— */
+const ROUTE_LABEL = {
+  calculator: ['确定性计算', 'b-seal'],
+  entry_hit:  ['命中词条 · 律师口径', 'b-green'],
+  rag:        ['检索生成 · 已过校验', 'b-seal'],
+  clarify:    ['要素确认', 'b-gray'],
+  refuse:     ['拒答 · 建议转律师', 'b-gold'],
+};
 function answerHtml(a) {
-  const [label, cls] = ROUTE_LABEL[a.route] || ["回答","b-gray"];
-  let h = `<div class="ans"><div class="route-line"><span class="badge ${cls}">${label}</span>`;
-  h += `<span class="badge b-gray">${a.llm_used ? "DeepSeek 管线" : "规则引擎"}</span>`;
-  if (a.region) h += `<span class="badge b-gray">地区：${esc(a.region)}</span>`;
-  h += `</div>`;
-  h += `<div class="concl pretty">${esc(a.conclusion)}</div>`;
+  const [label, cls] = ROUTE_LABEL[a.route] || ['回答', 'b-gray'];
+  let h = `<div class="ans"><div class="route-bar">
+    <span class="badge ${cls}">${label}</span>
+    <span class="badge b-gray">${a.llm_used ? 'DeepSeek 管线' : '规则引擎'}</span>`;
+  if (a.region) h += `<span class="badge b-gray">${esc(a.region)}</span>`;
+  h += `</div><div class="concl pretty">${esc(a.conclusion)}</div>`;
   if (a.clarify && a.clarify.length)
-    h += `<div class="blk"><ul class="steps">${a.clarify.map(x => `<li>${esc(x)}</li>`).join("")}</ul></div>`;
+    h += `<div class="blk"><ul class="clar">${a.clarify.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>`;
   if (a.amount != null)
-    h += `<div class="blk amount-line">测算金额 <span class="num">¥ ${nf(a.amount)}</span></div>`;
+    h += `<div class="blk stamp-wrap"><div class="stamp">
+      <span class="stamp-label">测算金额</span>
+      <span class="stamp-num num">¥ ${nf(a.amount)}</span></div></div>`;
   if (a.steps && a.steps.length)
-    h += `<div class="blk"><div class="blk-label">计算过程</div><ol class="steps">${a.steps.map(s => `<li>${esc(s)}</li>`).join("")}</ol></div>`;
+    h += `<div class="blk"><div class="blk-label">计 算 过 程</div>
+      <ol class="steps">${a.steps.map(s => `<li><span>${esc(s)}</span></li>`).join('')}</ol></div>`;
   if (a.analysis)
-    h += `<div class="blk"><div class="blk-label">分析</div><p class="pretty" style="max-width:52ch;font-size:14px">${esc(a.analysis)}</p></div>`;
+    h += `<div class="blk"><div class="blk-label">分 析</div>
+      <p class="pretty" style="max-width:52ch;font-size:14px;color:var(--ink-2)">${esc(a.analysis)}</p></div>`;
   if (a.entry && a.entry.how_to && a.entry.how_to.length)
-    h += `<div class="blk"><div class="blk-label">操作指引</div><ol class="howto">${a.entry.how_to.map(s => `<li>${esc(s)}</li>`).join("")}</ol></div>`;
+    h += `<div class="blk"><div class="blk-label">操 作 指 引</div>
+      <ol class="howto">${a.entry.how_to.map(s => `<li><span>${esc(s)}</span></li>`).join('')}</ol></div>`;
+  if (a.cases && a.cases.length)
+    h += `<div class="blk"><div class="blk-label">参 考 案 例</div>` +
+      a.cases.map(c => `<p class="pretty" style="font-size:13.5px;color:var(--ink-2);max-width:54ch">
+        <strong>${esc(c.title)}</strong>　${esc(c.gist)}</p>`).join('') + `</div>`;
   if (a.citations && a.citations.length)
-    h += `<div class="blk"><div class="blk-label">法条依据（点开看原文）</div>${a.citations.map(citeHtml).join("")}</div>`;
+    h += `<div class="blk cite-in-msg"><div class="blk-label">法 条 依 据</div>
+      ${a.citations.map(citeHtml).join('')}</div>`;
   if (a.warnings && a.warnings.length)
-    h += `<div class="blk warnbox">${a.warnings.map(w => `<div>· ${esc(w)}</div>`).join("")}</div>`;
+    h += `<div class="blk warnbox">${a.warnings.map(w => `<div class="pretty">${esc(w)}</div>`).join('')}</div>`;
   h += `<div class="ans-foot"><span class="disc">内容仅供参考，不构成法律意见</span>
-    <button class="btn-lawyer ${a.escalate ? "solid" : ""}" onclick="escalate(this)">咨询合作律师 →</button></div></div>`;
+    <button class="btn-lawyer${a.escalate ? ' solid' : ''}" onclick="escalate(this)">咨询合作律师 →</button>
+  </div></div>`;
   return h;
 }
 
-let lastQuestion = "";
+let lastQuestion = '';
+let sessionId = null;
 async function ask(q) {
   lastQuestion = q;
-  const msgs = $("#msgs");
-  msgs.insertAdjacentHTML("beforeend", `<div class="m-user pretty">${esc(q)}</div>`);
-  const hold = document.createElement("div");
-  hold.className = "m-bot";
-  hold.innerHTML = `<div class="ans thinking">正在确认要素并检索知识库</div>`;
+  const msgs = $('#msgs');
+  const empt = msgs.querySelector('#chat-empty');
+  if (empt) empt.remove();
+  msgs.insertAdjacentHTML('beforeend', `<div class="m-user pretty">${esc(q)}</div>`);
+  const hold = document.createElement('div');
+  hold.className = 'm-bot';
+  hold.innerHTML = `<div class="ans thinking">检索知识库并核验引用
+    <div class="dots"><span></span><span></span><span></span></div></div>`;
   msgs.appendChild(hold);
-  hold.scrollIntoView({behavior:"smooth", block:"end"});
-  $("#send").disabled = true;
+  hold.scrollIntoView({behavior:'smooth', block:'end'});
+  $('#send').disabled = true;
   try {
-    const a = await api("/api/ask", {question: q, region: region()});
-    hold.innerHTML = a.error ? `<div class="ans">出错了：${esc(a.error)}</div>` : answerHtml(a);
-  } catch (e) {
-    hold.innerHTML = `<div class="ans">网络错误：${esc(e.message)}</div>`;
+    const a = await api('/api/ask', {question: q, region: region(), session_id: sessionId});
+    if (a.error) {
+      hold.innerHTML = `<div class="ans"><p style="color:var(--seal-deep)">出错：${esc(a.error)}</p></div>`;
+    } else {
+      if (a.session_id) sessionId = a.session_id;
+      hold.innerHTML = answerHtml(a);
+      updateAside(a.citations || []);
+    }
+  } catch(e) {
+    hold.innerHTML = `<div class="ans"><p style="color:var(--seal-deep)">网络错误：${esc(e.message)}</p></div>`;
   }
-  $("#send").disabled = false;
-  hold.scrollIntoView({behavior:"smooth", block:"end"});
+  $('#send').disabled = false;
+  hold.scrollIntoView({behavior:'smooth', block:'end'});
 }
-
 async function escalate(btn) {
   btn.disabled = true;
-  const r = await api("/api/escalate", {question: lastQuestion || "（页面发起）", region: region()});
-  btn.outerHTML = `<span class="badge b-danger">已建转介工单 #${r.referral_id}，待律师接单（演示）</span>`;
+  const r = await api('/api/escalate', {question: lastQuestion || '（页面发起）', region: region()});
+  btn.outerHTML = `<span class="badge b-seal">已建转介工单 #${r.referral_id} · 待律师接单（演示）</span>`;
+}
+$('#send').onclick = () => { const q = $('#q').value.trim(); if (q) { $('#q').value = ''; $('#q').style.height = 'auto'; ask(q); } };
+$('#q').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); $('#send').click(); } });
+$('#q').addEventListener('input', function() { this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 130) + 'px'; });
+$('#chips').addEventListener('click', e => { if (e.target.matches('.chip')) ask(e.target.textContent.trim()); });
+
+/* —— 文书起草 —— */
+let docTypes = [], docSel = null, lastDoc = null;
+async function loadDocTypes() {
+  try { docTypes = await api('/api/doc-types'); }
+  catch(e) { $('#doc-types').innerHTML = `<p style="color:var(--seal-deep)">加载失败：${esc(e.message)}</p>`; return; }
+  $('#doc-types').innerHTML = docTypes.map(d =>
+    `<button class="doc-type" data-k="${esc(d.key)}"><b>${esc(d.title)}</b><small>${esc(d.desc)}</small></button>`).join('');
+  selectDocType(docTypes[0].key);
+}
+function selectDocType(key) {
+  docSel = docTypes.find(d => d.key === key);
+  document.querySelectorAll('.doc-type').forEach(b => b.classList.toggle('on', b.dataset.k === key));
+  $('#doc-form-title').textContent = docSel.title;
+  $('#doc-form-desc').textContent = docSel.desc;
+  $('#doc-fields').innerHTML = docSel.fields.map(f => {
+    const star = f.req ? ' <span class="req-star">*</span>' : '';
+    const inner = f.type === 'textarea'
+      ? `<textarea data-f="${esc(f.key)}" placeholder="${esc(f.ph)}"></textarea>`
+      : `<input type="${f.type === 'number' ? 'number' : f.type === 'date' ? 'date' : 'text'}"
+           data-f="${esc(f.key)}" placeholder="${esc(f.ph)}">`;
+    return `<label class="f"><span>${esc(f.label)}${star}</span>${inner}</label>`;
+  }).join('');
+}
+$('#doc-types').addEventListener('click', e => {
+  const b = e.target.closest('.doc-type'); if (b) selectDocType(b.dataset.k);
+});
+$('#doc-go').onclick = async () => {
+  if (!docSel) return;
+  const fields = {};
+  let missing = null;
+  document.querySelectorAll('#doc-fields [data-f]').forEach(el => {
+    fields[el.dataset.f] = el.value.trim();
+  });
+  for (const f of docSel.fields)
+    if (f.req && !fields[f.key]) { missing = f.label; break; }
+  if (missing) { alert('请先填写必填项：' + missing); return; }
+  const out = $('#doc-out');
+  const btn = $('#doc-go');
+  btn.disabled = true; btn.textContent = '起草中…（约 30 秒）';
+  out.innerHTML = `<div class="ans thinking" style="margin-top:34px">DeepSeek 正在起草并核验引用
+    <div class="dots"><span></span><span></span><span></span></div></div>`;
+  try {
+    const r = await api('/api/draft', {type: docSel.key, fields, region: region()});
+    if (r.error) throw new Error(r.error);
+    lastDoc = r;
+    lastDoc._type = docSel.key;
+    lastDoc._fields = fields;
+    let h = `<div class="doc-paper">${esc(r.document)}</div>`;
+    h += `<div class="doc-toolbar">
+      <button class="doc-btn" onclick="copyDoc(this)">复制全文</button>
+      <button class="doc-btn" onclick="downloadDoc()">下载 .txt</button>
+      <button class="doc-btn" onclick="runReview()">重新 AI 审核</button>
+    </div>`;
+    if (r.citations && r.citations.length)
+      h += `<div class="blk"><div class="blk-label">引 用 法 条（已库内核验）</div>${r.citations.map(citeHtml).join('')}</div>`;
+    if (r.warnings && r.warnings.length)
+      h += `<div class="blk warnbox">${r.warnings.map(w => `<div class="pretty">${esc(w)}</div>`).join('')}</div>`;
+    h += `<div id="doc-review"></div>`;
+    out.innerHTML = h;
+    runReview();
+  } catch(e) {
+    out.innerHTML = `<div class="ans" style="margin-top:34px"><p style="color:var(--seal-deep)">生成失败：${esc(e.message)}</p></div>`;
+  }
+  btn.disabled = false; btn.textContent = '生 成 文 书';
+};
+async function copyDoc(btn) {
+  if (!lastDoc) return;
+  try { await navigator.clipboard.writeText(lastDoc.document); }
+  catch(e) {
+    const t = document.createElement('textarea');
+    t.value = lastDoc.document; document.body.appendChild(t);
+    t.select(); document.execCommand('copy'); t.remove();
+  }
+  btn.textContent = '已复制 ✓';
+  setTimeout(() => btn.textContent = '复制全文', 1600);
+}
+function downloadDoc() {
+  if (!lastDoc) return;
+  const blob = new Blob(['﻿' + lastDoc.document], {type: 'text/plain;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = lastDoc.title + '.txt';
+  a.click();
+  URL.revokeObjectURL(a.href);
 }
 
-$("#send").onclick = () => { const q = $("#q").value.trim(); if (q) { $("#q").value = ""; ask(q); } };
-$("#q").addEventListener("keydown", e => {
-  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); $("#send").click(); }
-});
-$("#chips").addEventListener("click", e => { if (e.target.tagName === "BUTTON") ask(e.target.textContent.trim()); });
+/* —— AI 律师审核 —— */
+const RV = {
+  pass:   ['准', '审核通过 · 补全占位后可发出', 'rv-pass'],
+  revise: ['改', '需修改后使用', 'rv-revise'],
+  block:  ['驳', '不建议发出 · 存在硬伤', 'rv-block'],
+};
+const SEV = {
+  blocker: ['硬伤', 'f-blocker', 'sev-blocker'],
+  risk:    ['风险', 'f-risk', 'sev-risk'],
+  polish:  ['润色', 'f-polish', 'sev-polish'],
+};
+async function runReview() {
+  if (!lastDoc) return;
+  const box = $('#doc-review');
+  if (!box) return;
+  box.innerHTML = `<div class="ans thinking" style="margin-top:20px">AI 律师正在逐项审核（约 30 秒）
+    <div class="dots"><span></span><span></span><span></span></div></div>`;
+  try {
+    const r = await api('/api/review', {type: lastDoc._type, document: lastDoc.document,
+                                        fields: lastDoc._fields, region: region()});
+    if (r.error) throw new Error(r.error);
+    box.innerHTML = reviewHtml(r);
+    box.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+  } catch(e) {
+    box.innerHTML = `<div class="ans" style="margin-top:20px"><p style="color:var(--seal-deep)">
+      审核失败：${esc(e.message)}</p>
+      <button class="doc-btn" style="margin-top:9px" onclick="runReview()">重试</button></div>`;
+  }
+}
+function reviewHtml(r) {
+  const [zh, label, cls] = RV[r.verdict] || RV.revise;
+  let h = `<div class="review-banner ${cls}">
+    <div class="rv-seal">${zh}</div>
+    <div><div class="rv-title">AI 律师审核：${label}</div>
+    ${r.summary ? `<div class="rv-sum pretty">${esc(r.summary)}</div>` : ''}</div></div>`;
+  const order = {blocker: 0, risk: 1, polish: 2};
+  const fs = (r.findings || []).slice().sort((a, b) => (order[a.severity] ?? 9) - (order[b.severity] ?? 9));
+  if (fs.length)
+    h += fs.map(f => {
+      const [sl, fc, sc] = SEV[f.severity] || SEV.risk;
+      return `<div class="finding ${fc}">
+        <b><span class="sev-chip ${sc}">${sl}</span>${esc(f.point)}</b>
+        ${f.detail ? `<div class="fd pretty">${esc(f.detail)}</div>` : ''}
+        ${f.fix ? `<div class="fx pretty">${esc(f.fix)}</div>` : ''}
+      </div>`;
+    }).join('');
+  else
+    h += `<div class="finding f-polish" style="border-color:var(--green)"><b>未发现问题</b></div>`;
+  if (r.checklist && r.checklist.length) {
+    const okN = r.checklist.filter(c => c.ok).length;
+    h += `<details class="checklist"><summary>审核清单逐项核对　${okN} / ${r.checklist.length} 通过 ▾</summary>
+      <ul>${r.checklist.map(c => `<li class="${c.ok ? 'ck-ok' : 'ck-no'}">${esc(c.item)}
+        ${c.note ? `　<small>${esc(c.note)}</small>` : ''}</li>`).join('')}</ul></details>`;
+  }
+  if (r.citations && r.citations.length)
+    h += `<div class="blk"><div class="blk-label">审 核 依 据（库内核验）</div>${r.citations.map(citeHtml).join('')}</div>`;
+  if (r.disclaimer)
+    h += `<p class="muted pretty" style="margin-top:12px">${esc(r.disclaimer)}</p>`;
+  return h;
+}
 
 /* —— 计算器 —— */
 const today = new Date().toISOString().slice(0, 10);
-$("#s-term").value = today; $("#a-term").value = today;
-["上海","江苏","浙江","北京","天津","河北","广东","广州","深圳"].forEach(r =>
-  $("#s-region").insertAdjacentHTML("beforeend", `<option>${r}</option>`));
-
+['#s-term', '#a-term'].forEach(id => { const el = $(id); if (el) el.value = today; });
+['上海','江苏','浙江','北京','天津','河北','广东','广州','深圳'].forEach(r =>
+  $('#s-region').insertAdjacentHTML('beforeend', `<option>${r}</option>`));
 function calcOutHtml(r) {
-  if (r.error) return `<p class="muted">出错：${esc(r.error)}</p>`;
-  let h = `<div class="amount-line">应付 <span class="num">¥ ${nf(r.amount)}</span></div>
-    <ol class="steps" style="margin-top:8px">${r.steps.map(s => `<li>${esc(s)}</li>`).join("")}</ol>`;
-  if (r.citations.length) h += `<div style="margin-top:8px">${r.citations.map(citeHtml).join("")}</div>`;
-  if (r.warnings.length) h += `<div class="warnbox" style="margin-top:8px">${r.warnings.map(w => `<div>· ${esc(w)}</div>`).join("")}</div>`;
+  if (r.error) return `<p style="color:var(--seal-deep);font-size:14px">出错：${esc(r.error)}</p>`;
+  let h = `<div class="stamp-wrap" style="margin-bottom:13px"><div class="stamp">
+    <span class="stamp-label">应付金额</span><span class="stamp-num num">¥ ${nf(r.amount)}</span></div></div>`;
+  h += `<ol class="steps">${r.steps.map(s => `<li><span>${esc(s)}</span></li>`).join('')}</ol>`;
+  if (r.citations && r.citations.length) h += `<div style="margin-top:11px">${r.citations.map(citeHtml).join('')}</div>`;
+  if (r.warnings && r.warnings.length) h += `<div class="warnbox" style="margin-top:11px">${r.warnings.map(w => `<div class="pretty">${esc(w)}</div>`).join('')}</div>`;
   return h;
 }
-$("#s-go").onclick = async () => {
-  const out = $("#s-out"); out.style.display = "block"; out.innerHTML = "计算中…";
-  out.innerHTML = calcOutHtml(await api("/api/calc", {
-    type: $("#s-2n").checked ? "unlawful" : "severance",
-    hire_date: $("#s-hire").value, term_date: $("#s-term").value,
-    monthly_wage: $("#s-wage").value, region: $("#s-region").value }));
+$('#s-go').onclick = async () => {
+  const out = $('#s-out'); out.style.display = 'block'; out.textContent = '计算中…';
+  out.innerHTML = calcOutHtml(await api('/api/calc', {
+    type: $('#s-2n').checked ? 'unlawful' : 'severance',
+    hire_date: $('#s-hire').value, term_date: $('#s-term').value,
+    monthly_wage: $('#s-wage').value, region: $('#s-region').value }));
 };
-$("#a-go").onclick = async () => {
-  const out = $("#a-out"); out.style.display = "block"; out.innerHTML = "计算中…";
-  out.innerHTML = calcOutHtml(await api("/api/calc", {
-    type: "annual", monthly_wage: $("#a-wage").value,
-    cumulative_years: $("#a-years").value, taken_days: $("#a-taken").value,
-    term_date: $("#a-term").value }));
+$('#a-go').onclick = async () => {
+  const out = $('#a-out'); out.style.display = 'block'; out.textContent = '计算中…';
+  out.innerHTML = calcOutHtml(await api('/api/calc', {
+    type: 'annual', monthly_wage: $('#a-wage').value,
+    cumulative_years: $('#a-years').value, taken_days: $('#a-taken').value,
+    term_date: $('#a-term').value, hire_date: $('#a-hire').value || '' }));
 };
 
-/* —— 词条 —— */
-const STATUS_ZH = {published:["已发布 · 律师审核","b-ok"], in_review:["待律师审核","b-warn"],
-  draft:["草稿","b-gray"], needs_recheck:["待复审","b-warn"]};
-async function loadEntries() {
-  const list = await api("/api/entries");
-  $("#entry-list").innerHTML = list.map(e => {
-    const [s, c] = STATUS_ZH[e.status] || [e.status, "b-gray"];
-    return `<div class="card entry-item" data-slug="${esc(e.slug)}">
-      <h3 class="balance">${esc(e.title)} <span class="badge ${c}">${s}</span></h3>
-      <div class="muted">主题：${esc(e.topic || "—")} · 依据版本 ${esc(e.basis_date || "—")}</div></div>`;
-  }).join("") || `<div class="muted">暂无词条</div>`;
+/* —— 案例库 —— */
+const OUTCOME = {
+  employer_win: {zh: '驳', label: '用人单位胜', cls: 'cs-er'},
+  employee_win: {zh: '准', label: '劳动者胜',   cls: 'cs-ee'},
+  partial:      {zh: '酌', label: '部分支持',   cls: 'cs-pt'},
+};
+async function loadCases() {
+  casesLoaded = true;
+  const cards = $('#case-cards');
+  cards.innerHTML = `<div class="empty-state"><div class="dots"><span></span><span></span><span></span></div><p>加载中…</p></div>`;
+  try {
+    const params = [];
+    if ($('#case-tag').value) params.push('tag=' + encodeURIComponent($('#case-tag').value));
+    if ($('#case-region').value) params.push('region=' + encodeURIComponent($('#case-region').value));
+    const cases = await api('/api/cases' + (params.length ? '?' + params.join('&') : ''));
+    if (!Array.isArray(cases) || !cases.length) {
+      cards.innerHTML = `<div class="empty-state">
+        <svg width="72" height="72" viewBox="0 0 96 96" style="color:var(--line)" fill="none"><use href="#il-gavel"/></svg>
+        <p>暂无符合条件的案例<br>案例库随官方发布持续补充</p></div>`;
+      return;
+    }
+    cards.innerHTML = cases.map(c => {
+      const o = OUTCOME[c.result] || {zh: '案', label: '—', cls: 'cs-er'};
+      const tags = (c.tags || []).map(t => `<span class="tagchip">${esc(t)}</span>`).join('');
+      return `<div class="case-card">
+        <div class="case-seal ${o.cls}">${o.zh}</div>
+        <div class="case-body">
+          <div class="case-title balance">${esc(c.title || c.gist || '案例')}</div>
+          <div class="case-meta">
+            <span>${o.label}</span>
+            ${c.court ? `<span>${esc(c.court)}</span>` : ''}
+            ${c.region ? `<span>${esc(c.region)}</span>` : ''}
+            ${c.case_no ? `<span class="num">${esc(c.case_no)}</span>` : ''}
+          </div>
+          ${c.gist && c.gist !== c.title ? `<div class="case-gist pretty">${esc(c.gist)}</div>` : ''}
+          ${tags ? `<div class="case-tags">${tags}</div>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    cards.innerHTML = `<div class="empty-state"><p style="color:var(--seal-deep)">加载失败：${esc(e.message)}</p></div>`;
+  }
 }
-$("#entry-list").addEventListener("click", async e => {
-  const item = e.target.closest(".entry-item"); if (!item) return;
-  const d = await api("/api/entries/" + item.dataset.slug);
-  const [s, c] = STATUS_ZH[d.status] || [d.status, "b-gray"];
-  $("#entry-detail").innerHTML = `<div class="card">
-    <h3 class="balance">${esc(d.title)} <span class="badge ${c}">${s}</span></h3>
-    <p class="pretty" style="max-width:46ch;margin-top:8px;font-weight:600">${esc(d.body.conclusion)}</p>
-    ${d.body.how_to ? `<div class="blk"><div class="blk-label">操作指引</div><ol class="howto">${d.body.how_to.map(x => `<li>${esc(x)}</li>`).join("")}</ol></div>` : ""}
-    ${d.body.pitfalls ? `<div class="blk warnbox">${d.body.pitfalls.map(x => `<div>· ${esc(x)}</div>`).join("")}</div>` : ""}
-    <div class="blk"><div class="blk-label">法条依据</div>${d.citations.map(citeHtml).join("")}</div>
+$('#case-load').onclick = () => loadCases();
+
+/* —— 词条 —— */
+const STATUS_ZH = {
+  published: ['已发布 · 律师审核', 'b-green'],
+  in_review: ['待律师审核', 'b-gold'],
+  draft: ['草稿', 'b-gray'],
+  needs_recheck: ['待复审', 'b-gold'],
+};
+async function loadEntries() {
+  const list = await api('/api/entries');
+  $('#entry-list').innerHTML = list.map(e => {
+    const [s, c] = STATUS_ZH[e.status] || [e.status, 'b-gray'];
+    return `<div class="entry-item" data-slug="${esc(e.slug)}">
+      <h3 class="balance">${esc(e.title)}　<span class="badge ${c}">${s}</span></h3>
+      <div class="muted" style="margin-top:5px">主题：${esc(e.topic || '—')} · 依据版本 ${esc(e.basis_date || '—')}</div>
+    </div>`;
+  }).join('') || `<div class="muted">暂无词条</div>`;
+}
+$('#entry-list').addEventListener('click', async e => {
+  const item = e.target.closest('.entry-item'); if (!item) return;
+  const d = await api('/api/entries/' + item.dataset.slug);
+  if (!d || d.error) return;
+  const [s, c] = STATUS_ZH[d.status] || [d.status, 'b-gray'];
+  $('#entry-detail').innerHTML = `<div class="detail-card">
+    <h3 class="balance">${esc(d.title)}　<span class="badge ${c}">${s}</span></h3>
+    <p class="pretty" style="max-width:46ch;margin-top:12px;font-weight:600;font-size:15px">${esc(d.body.conclusion)}</p>
+    ${d.body.how_to ? `<div class="blk"><div class="blk-label">操 作 指 引</div>
+      <ol class="howto">${d.body.how_to.map(x => `<li><span>${esc(x)}</span></li>`).join('')}</ol></div>` : ''}
+    ${d.body.pitfalls ? `<div class="blk warnbox">${d.body.pitfalls.map(x => `<div class="pretty">${esc(x)}</div>`).join('')}</div>` : ''}
+    <div class="blk"><div class="blk-label">法 条 依 据</div>${d.citations.map(citeHtml).join('')}</div>
   </div>`;
-  $("#entry-detail").scrollIntoView({behavior:"smooth"});
+  $('#entry-detail').scrollIntoView({behavior: 'smooth'});
 });
 
 /* —— 知识库 —— */
-const LEVEL_ZH = {law:"法律", admin_reg:"行政法规", judicial_interp:"司法解释", dept_rule:"部门规章",
-  local_reg:"地方性法规", local_rule:"地方政府规章", normative_doc:"规范性文件"};
+const LEVEL_ZH = {
+  law: '法律', admin_reg: '行政法规', judicial_interp: '司法解释',
+  dept_rule: '部门规章', local_reg: '地方性法规',
+  local_rule: '地方政府规章', normative_doc: '规范性文件',
+};
+const RLEVEL = {country: '国家层', province: '省级', city: '市级'};
 async function loadDb() {
-  const s = await api("/api/db/summary");
-  $("#llm-badge").textContent = s.llm ? `LLM：${s.llm}` : "规则引擎模式";
-  $("#db-stats").innerHTML = [
-    [s.sources, "法规（部）"], [s.articles, "法条（条）"],
-    [s.articles_unverified, "待核验法条 ⚠"], [s.entries, "百科词条"],
-    [s.params, "地区参数"], [s.regions, "覆盖地区"],
-    [s.qa_logged, "问答日志（条）"], [s.referrals, "转介工单"],
-  ].map(([v, l]) => `<div class="stat"><div class="v">${nf(v)}</div><div class="l">${l}</div></div>`).join("");
+  const s = await api('/api/db/summary');
+  if (s.llm) { $('#llm-text').textContent = s.llm; $('#llm-dot').classList.add('on'); }
+  else { $('#llm-text').textContent = '规则引擎'; }
+  $('#db-stats').innerHTML = [
+    [s.sources, '法规（部）'], [s.articles, '法条（条）'],
+    [s.articles_unverified, '待核验法条'], [s.entries, '百科词条'],
+    [s.params, '地区参数'], [s.regions, '覆盖地区'],
+    [s.qa_logged, '问答日志'], [s.referrals, '转介工单'],
+  ].map(([v, l]) => `<div class="stat"><div class="v num">${nf(v)}</div><div class="l">${l}</div></div>`).join('');
 
-  const srcs = await api("/api/db/sources");
-  $("#src-count").textContent = srcs.length + " 部";
-  $("#tbl-sources").innerHTML = `<tr><th>法规名称</th><th>层级</th><th>文号</th><th>地区</th><th>生效</th><th>条数</th><th>状态</th></tr>` +
-    srcs.map(x => `<tr><td>${esc(x.title)}</td><td>${LEVEL_ZH[x.level] || x.level}</td>
-      <td>${esc(x.doc_no || "—")}</td><td>${esc(x.region)}</td>
-      <td class="num">${esc(x.effective_date || "—")}</td><td class="num">${x.articles}</td>
-      <td><span class="badge ${x.status === "active" ? "b-ok" : "b-warn"}">${x.status === "active" ? "现行有效" : x.status}</span></td></tr>`).join("");
+  const srcs = await api('/api/db/sources');
+  $('#src-count').textContent = srcs.length + ' 部';
+  $('#tbl-sources').innerHTML =
+    '<tr><th>法规名称</th><th>层级</th><th>文号</th><th>地区</th><th>生效</th><th>条数</th><th>状态</th></tr>' +
+    srcs.map(x => `<tr><td>${esc(x.title)}</td>
+      <td><span class="tagchip">${LEVEL_ZH[x.level] || x.level}</span></td>
+      <td style="font-size:12px">${esc(x.doc_no || '—')}</td><td>${esc(x.region)}</td>
+      <td class="num">${esc(x.effective_date || '—')}</td><td class="num">${x.articles}</td>
+      <td><span class="v-tag ${x.status === 'active' ? 'v-ok' : 'v-warn'}">${x.status === 'active' ? '现行有效' : x.status}</span></td></tr>`).join('');
 
-  const arts = await api("/api/db/articles");
-  $("#art-count").textContent = arts.length + " 条";
-  $("#tbl-articles").innerHTML = `<tr><th>法规</th><th>条款</th><th>原文</th><th>核验</th></tr>` +
-    arts.map(x => `<tr><td>${esc(x.source)}</td>
-      <td style="white-space:nowrap">${esc(x.article_no)}${x.clause_no ? "第" + esc(x.clause_no) + "款" : ""}</td>
+  const arts = await api('/api/db/articles');
+  $('#art-count').textContent = arts.length + ' 条';
+  $('#tbl-articles').innerHTML =
+    '<tr><th>法规</th><th>条款</th><th>原文</th><th>核验</th></tr>' +
+    arts.map(x => `<tr><td style="font-size:12px;white-space:nowrap">${esc(x.source)}</td>
+      <td class="num" style="white-space:nowrap">${esc(x.article_no)}${x.clause_no ? '第' + esc(x.clause_no) + '款' : ''}</td>
       <td class="art-text pretty">${esc(x.text)}</td>
-      <td>${x.verified ? `<span class="badge b-ok">✓ 已核验</span>` : `<span class="badge b-warn">⚠ 待核验</span>`}</td></tr>`).join("");
+      <td>${x.verified ? '<span class="v-tag v-ok">已核验</span>' : '<span class="v-tag v-warn">待核验</span>'}</td></tr>`).join('');
 
-  const params = await api("/api/db/params");
-  $("#param-count").textContent = params.length + " 项";
-  $("#tbl-params").innerHTML = `<tr><th>地区</th><th>参数</th><th>数值</th><th>期间</th><th>核验</th></tr>` +
+  const params = await api('/api/db/params');
+  $('#param-count').textContent = params.length + ' 项';
+  $('#tbl-params').innerHTML =
+    '<tr><th>地区</th><th>参数</th><th>数值</th><th>期间</th><th>核验</th></tr>' +
     params.map(x => `<tr><td>${esc(x.region)}</td><td>${esc(x.param_key)}</td>
-      <td class="num">${nf(x.value.amount)} ${esc(x.value.unit || "")}</td><td>${esc(x.period)}</td>
-      <td>${x.verified ? `<span class="badge b-ok">✓</span>` : `<span class="badge b-warn">⚠ 占位</span>`}</td></tr>`).join("");
+      <td class="num">${nf(x.value.amount)} ${esc(x.value.unit || '')}</td>
+      <td class="num">${esc(x.period)}</td>
+      <td>${x.verified ? '<span class="v-tag v-ok">已核</span>' : '<span class="v-tag v-warn">占位</span>'}</td></tr>`).join('');
 
-  const regions = await api("/api/db/regions");
-  $("#tbl-regions").innerHTML = `<tr><th>名称</th><th>层级</th><th>区划码</th><th>上级</th></tr>` +
-    regions.map(x => `<tr><td>${esc(x.name)}</td>
-      <td>${{country:"国家层", province:"省级", city:"市级"}[x.level]}</td>
-      <td class="num">${esc(x.code)}</td><td>${esc(x.parent || "—")}</td></tr>`).join("");
+  const regions = await api('/api/db/regions');
+  $('#tbl-regions').innerHTML =
+    '<tr><th>名称</th><th>层级</th><th>区划码</th><th>上级</th></tr>' +
+    regions.map(x => `<tr><td>${esc(x.name)}</td><td>${RLEVEL[x.level] || x.level}</td>
+      <td class="num">${esc(x.code)}</td><td>${esc(x.parent || '—')}</td></tr>`).join('');
 }
 
 loadEntries(); loadDb();

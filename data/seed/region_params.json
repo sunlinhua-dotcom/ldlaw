@@ -1,26 +1,247 @@
 {
-  "_comment": "地区参数种子。全部为演示占位数值（verified=false），不是真实公布数据；正式使用前由运营按各地官方公布数替换并由律师确认。",
-  "params": [
-    {
-      "region": "上海",
-      "param_key": "social_avg_wage_monthly",
-      "value": { "amount": 12000, "unit": "CNY/月", "note": "演示占位，非真实公布数" },
-      "period": "2025-demo",
-      "verified": false
-    },
-    {
-      "region": "江苏",
-      "param_key": "social_avg_wage_monthly",
-      "value": { "amount": 8500, "unit": "CNY/月", "note": "演示占位，非真实公布数" },
-      "period": "2025-demo",
-      "verified": false
-    },
-    {
-      "region": "上海",
-      "param_key": "min_wage_monthly",
-      "value": { "amount": 2700, "unit": "CNY/月", "note": "演示占位，非真实公布数" },
-      "period": "2025-demo",
-      "verified": false
-    }
-  ]
+ "_comment": "地区参数。social_avg_wage_monthly = 经济补偿 3 倍封顶口径（法定为设区市/直辖市上年度职工月平均工资），数值为模型知识近似值，全部 verified=0、UI 强制 ⚠，生产前必须按各地人社官网公布数逐项核验替换（G1）。未配市级 social_avg 的城市按省级回退并提示口径差异。",
+ "params": [
+  {
+   "region": "上海",
+   "param_key": "social_avg_wage_monthly",
+   "value": {
+    "amount": 12307,
+    "unit": "CNY/月",
+    "note": "2023 年度城镇单位就业人员月平均工资，近似值待官方核验"
+   },
+   "period": "2023",
+   "verified": false
+  },
+  {
+   "region": "北京",
+   "param_key": "social_avg_wage_monthly",
+   "value": {
+    "amount": 11761,
+    "unit": "CNY/月",
+    "note": "2023 年度城镇单位就业人员月平均工资，近似值待官方核验"
+   },
+   "period": "2023",
+   "verified": false
+  },
+  {
+   "region": "天津",
+   "param_key": "social_avg_wage_monthly",
+   "value": {
+    "amount": 8550,
+    "unit": "CNY/月",
+    "note": "2023 年度社平口径，近似值待官方核验"
+   },
+   "period": "2023",
+   "verified": false
+  },
+  {
+   "region": "江苏",
+   "param_key": "social_avg_wage_monthly",
+   "value": {
+    "amount": 8132,
+    "unit": "CNY/月",
+    "note": "全省全口径月平均工资，近似值待官方核验；封顶法定口径为设区市级，苏州/南京数值待补"
+   },
+   "period": "2022",
+   "verified": false
+  },
+  {
+   "region": "浙江",
+   "param_key": "social_avg_wage_monthly",
+   "value": {
+    "amount": 7437,
+    "unit": "CNY/月",
+    "note": "全省全口径月平均工资，近似值待官方核验；封顶法定口径为设区市级"
+   },
+   "period": "2023",
+   "verified": false
+  },
+  {
+   "region": "广东",
+   "param_key": "social_avg_wage_monthly",
+   "value": {
+    "amount": 9167,
+    "unit": "CNY/月",
+    "note": "全省全口径月平均工资，近似值待官方核验；封顶法定口径为设区市级"
+   },
+   "period": "2023",
+   "verified": false
+  },
+  {
+   "region": "深圳",
+   "param_key": "social_avg_wage_monthly",
+   "value": {
+    "amount": 13730,
+    "unit": "CNY/月",
+    "note": "2023 年度在岗职工月平均工资，近似值待官方核验"
+   },
+   "period": "2023",
+   "verified": false
+  },
+  {
+   "region": "上海",
+   "param_key": "min_wage_monthly",
+   "value": {
+    "amount": 2690,
+    "unit": "CNY/月",
+    "note": "2023-07-01 起执行，待官方核验"
+   },
+   "period": "2023",
+   "verified": false
+  },
+  {
+   "region": "北京",
+   "param_key": "min_wage_monthly",
+   "value": {
+    "amount": 2420,
+    "unit": "CNY/月",
+    "note": "2023-09-01 起执行，待官方核验"
+   },
+   "period": "2023",
+   "verified": false
+  },
+  {
+   "region": "天津",
+   "param_key": "min_wage_monthly",
+   "value": {
+    "amount": 2320,
+    "unit": "CNY/月",
+    "note": "2023-11-01 起执行，待官方核验"
+   },
+   "period": "2023",
+   "verified": false
+  },
+  {
+   "region": "河北",
+   "param_key": "min_wage_monthly",
+   "value": {
+    "amount": 2200,
+    "unit": "CNY/月",
+    "note": "一档标准，待官方核验"
+   },
+   "period": "2023",
+   "verified": false
+  },
+  {
+   "region": "江苏",
+   "param_key": "min_wage_monthly",
+   "value": {
+    "amount": 2490,
+    "unit": "CNY/月",
+    "note": "一类地区标准，2024-01-01 起，待官方核验"
+   },
+   "period": "2024",
+   "verified": false
+  },
+  {
+   "region": "浙江",
+   "param_key": "min_wage_monthly",
+   "value": {
+    "amount": 2490,
+    "unit": "CNY/月",
+    "note": "一类地区标准，待官方核验"
+   },
+   "period": "2023",
+   "verified": false
+  },
+  {
+   "region": "广东",
+   "param_key": "min_wage_monthly",
+   "value": {
+    "amount": 2300,
+    "unit": "CNY/月",
+    "note": "一类地区标准（广州适用），待官方核验"
+   },
+   "period": "2021",
+   "verified": false
+  },
+  {
+   "region": "广州",
+   "param_key": "min_wage_monthly",
+   "value": {
+    "amount": 2300,
+    "unit": "CNY/月",
+    "note": "待官方核验"
+   },
+   "period": "2021",
+   "verified": false
+  },
+  {
+   "region": "深圳",
+   "param_key": "min_wage_monthly",
+   "value": {
+    "amount": 2360,
+    "unit": "CNY/月",
+    "note": "待官方核验"
+   },
+   "period": "2023",
+   "verified": false
+  },
+  {
+   "region": "苏州",
+   "param_key": "min_wage_monthly",
+   "value": {
+    "amount": 2490,
+    "unit": "CNY/月",
+    "note": "江苏一类地区标准，待官方核验"
+   },
+   "period": "2024",
+   "verified": false
+  },
+  {
+   "region": "南京",
+   "param_key": "min_wage_monthly",
+   "value": {
+    "amount": 2490,
+    "unit": "CNY/月",
+    "note": "江苏一类地区标准，待官方核验"
+   },
+   "period": "2024",
+   "verified": false
+  },
+  {
+   "region": "无锡",
+   "param_key": "min_wage_monthly",
+   "value": {
+    "amount": 2490,
+    "unit": "CNY/月",
+    "note": "江苏一类地区标准，待官方核验"
+   },
+   "period": "2024",
+   "verified": false
+  },
+  {
+   "region": "常州",
+   "param_key": "min_wage_monthly",
+   "value": {
+    "amount": 2490,
+    "unit": "CNY/月",
+    "note": "江苏一类地区标准，待官方核验"
+   },
+   "period": "2024",
+   "verified": false
+  },
+  {
+   "region": "杭州",
+   "param_key": "min_wage_monthly",
+   "value": {
+    "amount": 2490,
+    "unit": "CNY/月",
+    "note": "浙江一类地区标准，待官方核验"
+   },
+   "period": "2023",
+   "verified": false
+  },
+  {
+   "region": "宁波",
+   "param_key": "min_wage_monthly",
+   "value": {
+    "amount": 2490,
+    "unit": "CNY/月",
+    "note": "浙江一类地区标准，待官方核验"
+   },
+   "period": "2023",
+   "verified": false
+  }
+ ]
 }

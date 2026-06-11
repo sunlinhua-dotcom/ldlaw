@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS qa_session (
   org_id     INTEGER,
   user_id    INTEGER,
   region_id  INTEGER,
+  facts      TEXT CHECK (facts IS NULL OR json_valid(facts)),  -- 多轮要素累积（T2.4）
   created_at TEXT NOT NULL
 );
 

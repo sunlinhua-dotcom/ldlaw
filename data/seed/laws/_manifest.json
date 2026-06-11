@@ -1,0 +1,249 @@
+{
+ "_comment": "法规抓取清单：fetch_url 为抓取页面（gov.cn 官方或省级政府官网镜像），source_url 为权威源标注（G1 核验以 flk.npc.gov.cn 为准）。clause_splits 列出需单独成行供引用的款。",
+ "laws": [
+  {
+   "slug": "labor-contract-law",
+   "title": "中华人民共和国劳动合同法",
+   "doc_no": "主席令第七十三号（2012 年修正）",
+   "issuer": "全国人民代表大会常务委员会",
+   "level": "law",
+   "region": "CN",
+   "publish_date": "2012-12-28",
+   "effective_date": "2013-07-01",
+   "source_url": "https://flk.npc.gov.cn/",
+   "fetch_url": "https://fgw.sh.gov.cn/ys-laogong-1.7.1.1/20240125/b82166b6e7e343f3982367a73006ba6e.html",
+   "coverage": "full",
+   "min_articles": 95,
+   "default_topics": [
+    "劳动合同"
+   ]
+  },
+  {
+   "slug": "labor-law",
+   "title": "中华人民共和国劳动法",
+   "doc_no": "主席令第二十八号（2018 年修正）",
+   "issuer": "全国人民代表大会常务委员会",
+   "level": "law",
+   "region": "CN",
+   "publish_date": "2018-12-29",
+   "effective_date": "2018-12-29",
+   "source_url": "https://flk.npc.gov.cn/",
+   "fetch_url": "https://www.gd.gov.cn/zwgk/wjk/zcfgk/content/post_2532147.html",
+   "coverage": "full",
+   "min_articles": 100,
+   "default_topics": [
+    "劳动合同"
+   ]
+  },
+  {
+   "slug": "mediation-arbitration-law",
+   "title": "中华人民共和国劳动争议调解仲裁法",
+   "doc_no": "主席令第八十号",
+   "issuer": "全国人民代表大会常务委员会",
+   "level": "law",
+   "region": "CN",
+   "publish_date": "2007-12-29",
+   "effective_date": "2008-05-01",
+   "source_url": "https://flk.npc.gov.cn/",
+   "fetch_url": "https://www.gjxfj.gov.cn/gjxfj/xxgk/fgwj/flfg/webinfo/2016/03/1460585589964384.htm",
+   "coverage": "full",
+   "min_articles": 50,
+   "default_topics": [
+    "劳动争议"
+   ]
+  },
+  {
+   "slug": "judicial-interp-1",
+   "title": "最高人民法院关于审理劳动争议案件适用法律问题的解释（一）",
+   "doc_no": "法释〔2020〕26号",
+   "issuer": "最高人民法院",
+   "level": "judicial_interp",
+   "region": "CN",
+   "publish_date": "2020-12-29",
+   "effective_date": "2021-01-01",
+   "source_url": "https://www.court.gov.cn/fabu/xiangqing/282121.html",
+   "fetch_url": "https://www.court.gov.cn/fabu/xiangqing/282121.html",
+   "coverage": "full",
+   "min_articles": 50,
+   "default_topics": [
+    "劳动争议"
+   ]
+  },
+  {
+   "slug": "social-insurance-law",
+   "title": "中华人民共和国社会保险法",
+   "doc_no": "主席令第二十五号（2018 年修正）",
+   "issuer": "全国人民代表大会常务委员会",
+   "level": "law",
+   "region": "CN",
+   "publish_date": "2018-12-29",
+   "effective_date": "2018-12-29",
+   "source_url": "https://flk.npc.gov.cn/",
+   "fetch_url": "http://wjw.hubei.gov.cn/bmdt/ztzl/hbzyjk/fgbz__/202207/t20220701_4200696.shtml",
+   "coverage": "full",
+   "min_articles": 90,
+   "default_topics": [
+    "社保公积金"
+   ]
+  },
+  {
+   "slug": "lcl-implementation-regulation",
+   "title": "中华人民共和国劳动合同法实施条例",
+   "doc_no": "国务院令第535号",
+   "issuer": "国务院",
+   "level": "admin_reg",
+   "region": "CN",
+   "publish_date": "2008-09-18",
+   "effective_date": "2008-09-18",
+   "source_url": "https://www.gov.cn/flfg/2008-09/19/content_1099500.htm",
+   "fetch_url": "https://www.gov.cn/flfg/2008-09/19/content_1099500.htm",
+   "coverage": "full",
+   "min_articles": 35,
+   "default_topics": [
+    "劳动合同"
+   ]
+  },
+  {
+   "slug": "annual-leave-regulation",
+   "title": "职工带薪年休假条例",
+   "doc_no": "国务院令第514号",
+   "issuer": "国务院",
+   "level": "admin_reg",
+   "region": "CN",
+   "publish_date": "2007-12-14",
+   "effective_date": "2008-01-01",
+   "source_url": "https://www.gov.cn/flfg/2007-12/16/content_835527.htm",
+   "fetch_url": "https://www.gov.cn/flfg/2007-12/16/content_835527.htm",
+   "coverage": "full",
+   "min_articles": 9,
+   "default_topics": [
+    "休息休假"
+   ],
+   "clause_splits": {
+    "第五条": [
+     "三"
+    ]
+   }
+  },
+  {
+   "slug": "annual-leave-measures",
+   "title": "企业职工带薪年休假实施办法",
+   "doc_no": "人力资源和社会保障部令第1号",
+   "issuer": "人力资源和社会保障部",
+   "level": "dept_rule",
+   "region": "CN",
+   "publish_date": "2008-09-18",
+   "effective_date": "2008-09-18",
+   "source_url": "https://www.gov.cn/zhengce/2022-08/31/content_5711300.htm",
+   "fetch_url": "https://www.gov.cn/zhengce/2022-08/31/content_5711300.htm",
+   "coverage": "full",
+   "min_articles": 15,
+   "default_topics": [
+    "休息休假"
+   ]
+  },
+  {
+   "slug": "female-employee-protection",
+   "title": "女职工劳动保护特别规定",
+   "doc_no": "国务院令第619号",
+   "issuer": "国务院",
+   "level": "admin_reg",
+   "region": "CN",
+   "publish_date": "2012-04-28",
+   "effective_date": "2012-04-28",
+   "source_url": "https://www.gov.cn/flfg/2012-05/07/content_2131582.htm",
+   "fetch_url": "https://www.gov.cn/flfg/2012-05/07/content_2131582.htm",
+   "coverage": "full",
+   "min_articles": 15,
+   "default_topics": [
+    "女职工与三期"
+   ]
+  },
+  {
+   "slug": "wage-payment-provisions",
+   "title": "工资支付暂行规定",
+   "doc_no": "劳部发〔1994〕489号",
+   "issuer": "劳动部",
+   "level": "dept_rule",
+   "region": "CN",
+   "publish_date": "1994-12-06",
+   "effective_date": "1995-01-01",
+   "source_url": "https://www.gov.cn/zhengce/2022-08/31/content_5711284.htm",
+   "fetch_url": "https://www.gov.cn/zhengce/2022-08/31/content_5711284.htm",
+   "coverage": "full",
+   "min_articles": 18,
+   "default_topics": [
+    "工资与福利"
+   ]
+  },
+  {
+   "slug": "work-injury-regulation",
+   "title": "工伤保险条例",
+   "doc_no": "国务院令第586号（2010 年修订）",
+   "issuer": "国务院",
+   "level": "admin_reg",
+   "region": "CN",
+   "publish_date": "2010-12-20",
+   "effective_date": "2011-01-01",
+   "source_url": "https://flk.npc.gov.cn/",
+   "fetch_url": "https://fgk.chinatax.gov.cn/zcfgk/c100010/c5194427/content.html",
+   "coverage": "full",
+   "min_articles": 60,
+   "default_topics": [
+    "工伤"
+   ]
+  },
+  {
+   "slug": "shanghai-wage-payment",
+   "title": "上海市企业工资支付办法",
+   "doc_no": "沪人社综发〔2016〕29号",
+   "issuer": "上海市人力资源和社会保障局",
+   "level": "normative_doc",
+   "region": "上海",
+   "publish_date": "2016-06-17",
+   "effective_date": "2016-08-01",
+   "source_url": "https://rsj.sh.gov.cn/tgzzlgl_17309/20200617/t0035_1390573.html",
+   "fetch_url": "https://rsj.sh.gov.cn/tgzzlgl_17309/20200617/t0035_1390573.html",
+   "coverage": "full",
+   "min_articles": 20,
+   "default_topics": [
+    "工资与福利"
+   ]
+  },
+  {
+   "slug": "jiangsu-wage-payment",
+   "title": "江苏省工资支付条例",
+   "doc_no": "2021 年修正",
+   "issuer": "江苏省人民代表大会常务委员会",
+   "level": "local_reg",
+   "region": "江苏",
+   "publish_date": "2021-09-29",
+   "effective_date": "2021-09-29",
+   "source_url": "https://www.jsrd.gov.cn/qwfb/sjfg/202110/t20211008_532348.shtml",
+   "fetch_url": "https://frjs.jschina.com.cn/jiangsushengjifagui_farun/shengjifagui/shengjifagui2021/gongzizhifu2021/202205/t20220512_7539606.shtml",
+   "coverage": "full",
+   "min_articles": 40,
+   "default_topics": [
+    "工资与福利"
+   ],
+   "_fetch_note": "法润江苏（江苏省司法厅指导普法平台）镜像；G1 核验以 jsrd.gov.cn / flk 为准"
+  },
+  {
+   "slug": "jiangsu-labor-contract-regulation",
+   "title": "江苏省劳动合同条例",
+   "doc_no": "2013 年修订",
+   "issuer": "江苏省人民代表大会常务委员会",
+   "level": "local_reg",
+   "region": "江苏",
+   "publish_date": "2013-01-15",
+   "effective_date": "2013-05-01",
+   "source_url": "https://www.jsrd.gov.cn/",
+   "fetch_url": "http://hrss.yangzhou.gov.cn/ldzc/zcfg/art/2024/art_f23833842d094bcabaab3fa6ca693524.html",
+   "coverage": "full",
+   "min_articles": 50,
+   "default_topics": [
+    "劳动合同"
+   ]
+  }
+ ]
+}

@@ -94,8 +94,9 @@ def unlawful_damages(hire: date, term: date, avg_monthly_wage: float,
     steps = s.steps + [f"违法解除赔偿金 = 经济补偿 {s.amount:,.2f} × 2 = {amount:,.2f} 元"]
     return CalcResult(
         key="unlawful_damages", amount=amount, steps=steps,
-        citations=s.citations + ["《中华人民共和国劳动合同法》第八十七条"],
-        warnings=s.warnings + ["支付赔偿金的不再同时支付经济补偿（司法解释口径，正式版入库后引用）"],
+        citations=s.citations + ["《中华人民共和国劳动合同法》第八十七条",
+                                 "《中华人民共和国劳动合同法实施条例》第二十五条"],
+        warnings=s.warnings + ["支付赔偿金的，不再同时支付经济补偿（实施条例第二十五条）"],
     )
 
 
@@ -118,19 +119,37 @@ def exit_prorated_unused_days(year_passed_days: int, annual_days: int,
 
 
 def annual_leave_payout(monthly_wage: float, unused_days: int) -> CalcResult:
-    """未休年假折算工资：日工资 300%，其中含正常工资（额外 200%）。"""
+    """未休年假折算工资。法定报酬为日工资 300%，其中 100% 是正常工作期间已发工资，
+    企业额外应补 200% —— amount 取 200% 口径（HR 实际要补付的钱），300% 总额列在 steps。"""
     daily = monthly_wage / PAID_DAYS_PER_MONTH
     total = round(daily * 3 * unused_days, 2)
     extra = round(daily * 2 * unused_days, 2)
     steps = [
-        f"日工资 = {monthly_wage:,.0f} ÷ 21.75 = {daily:,.2f} 元",
-        f"未休 {unused_days} 天 × 日工资 × 300% = {total:,.2f} 元（其中含正常工资，额外应补 {extra:,.2f} 元）",
+        f"日工资 = {monthly_wage:,.0f} ÷ 21.75（月计薪天数）= {daily:,.2f} 元",
+        f"未休 {unused_days} 天 × 日工资 × 300% = {total:,.2f} 元（法定报酬总额，其中含已随正常工资发放的 100%）",
+        f"企业额外应补 = 日工资 × 200% × {unused_days} 天 = {extra:,.2f} 元",
     ]
     return CalcResult(
-        key="annual_leave", amount=total, steps=steps,
+        key="annual_leave", amount=extra, steps=steps,
         citations=["《职工带薪年休假条例》第三条",
                    "《职工带薪年休假条例》第五条第三款",
                    "《企业职工带薪年休假实施办法》第十条",
-                   "《企业职工带薪年休假实施办法》第十二条"],
-        warnings=["「累计工龄」含此前其他单位年限，需员工提供证明材料"],
+                   "《企业职工带薪年休假实施办法》第十二条",
+                   "《关于职工全年月平均工作时间和工资折算问题的通知》第二条"],
+        warnings=["「累计工龄」含此前其他单位年限，需员工提供证明材料",
+                  "若当年正常工资尚未结清（含未休天数对应工资），请按 300% 总额口径核算"],
     )
+
+
+# 全部计算器引用的法条（建库时逐条做存在性校验，解析不出即构建失败 —— T0.2）
+ALL_CALC_CITATIONS = [
+    "《中华人民共和国劳动合同法》第四十六条",
+    "《中华人民共和国劳动合同法》第四十七条",
+    "《中华人民共和国劳动合同法》第八十七条",
+    "《中华人民共和国劳动合同法实施条例》第二十五条",
+    "《职工带薪年休假条例》第三条",
+    "《职工带薪年休假条例》第五条第三款",
+    "《企业职工带薪年休假实施办法》第十条",
+    "《企业职工带薪年休假实施办法》第十二条",
+    "《关于职工全年月平均工作时间和工资折算问题的通知》第二条",
+]

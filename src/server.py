@@ -63,6 +63,7 @@ def api_db_summary() -> dict:
         "regions": g("SELECT count(*) FROM region WHERE level != 'country'"),
         "templates": g("SELECT count(*) FROM template"),
         "cases": g("SELECT count(*) FROM case_record"),
+        "local_sources": g("SELECT count(*) FROM legal_source WHERE region_id != 1"),
         "built_at": (kc.execute("SELECT value FROM meta WHERE key='built_at'").fetchone()
                      or ["-"])[0],
         "llm": llm.model_name() if llm.available() else None,
@@ -147,37 +148,94 @@ def api_calc(body: dict) -> dict:
         hire = date.fromisoformat(body["hire_date"])
         term = date.fromisoformat(body.get("term_date") or date.today().isoformat())
         wage = float(body["monthly_wage"])
-        kc = sqlite3.connect(f"file:{KDB}?mode=ro", uri=True)
+        kc = kconn()
         p = pipeline.fetch_param(kc, body.get("region", ""), "social_avg_wage_monthly")
         social = p["value"]["amount"] if p else None
-        note = "" if (p and p["verified"]) else ("（⚠ 社平为演示占位值，待核验）" if p else "")
+        note = ""
+        extra_warn = []
+        if p:
+            if not p["verified"]:
+                note = f"（⚠ 社平为近似值待核验，口径：{p['region_used']} {p['period']}）"
+            if p.get("fallback"):
+                extra_warn.append(f"未配置市级社平，封顶按 {p['region_used']} 省级口径，"
+                                  f"法定口径为设区市级，结果可能偏差")
         if ctype == "unlawful":
             calc = unlawful_damages(hire, term, wage, social)
         else:
             calc = severance(hire, term, wage, social, note)
-        kc2 = sqlite3.connect(f"file:{KDB}?mode=ro", uri=True)
-        cites = pipeline.resolve_citations(kc2, calc.citations)
-        kc2.close()
+        if hire < date(2008, 1, 1):
+            extra_warn.append("入职早于 2008-01-01，依法需分段计算（本结果未分段），"
+                              "请转律师核算后再使用")
+        cites, _ = pipeline.resolve_citations(kc, calc.citations)
         kc.close()
         return {"amount": calc.amount, "steps": calc.steps,
-                "citations": cites, "warnings": calc.warnings}
+                "citations": cites, "warnings": calc.warnings + extra_warn}
     if ctype == "annual":
         wage = float(body["monthly_wage"])
         years = float(body["cumulative_years"])
         taken = float(body.get("taken_days") or 0)
         term = date.fromisoformat(body.get("term_date") or date.today().isoformat())
+        hire = date.fromisoformat(body["hire_date"]) if body.get("hire_date") else None
         annual = statutory_annual_days(years)
-        passed = (term - date(term.year, 1, 1)).days + 1
+        year_start = date(term.year, 1, 1)
+        if hire and hire.year == term.year and hire > year_start:
+            passed = (term - hire).days + 1
+            base_note = f"自当年入职日 {hire.isoformat()} 起算"
+        else:
+            passed = (term - year_start).days + 1
+            base_note = "按全年在职折算"
         unused = exit_prorated_unused_days(passed, annual, taken)
         calc = annual_leave_payout(wage, unused)
         calc.steps.insert(0, f"累计工龄 {years:g} 年 → 全年应休 {annual} 天；"
-                             f"截至 {term.isoformat()} 已过 {passed} 天，已休 {taken:g} 天 → 应付未休 {unused} 天")
-        kc = sqlite3.connect(f"file:{KDB}?mode=ro", uri=True)
-        cites = pipeline.resolve_citations(kc, calc.citations)
+                             f"{base_note}，截至 {term.isoformat()} 已过 {passed} 天，"
+                             f"已休 {taken:g} 天 → 应付未休 {unused} 天")
+        kc = kconn()
+        cites, _ = pipeline.resolve_citations(kc, calc.citations)
         kc.close()
         return {"amount": calc.amount, "steps": calc.steps,
                 "citations": cites, "warnings": calc.warnings, "unused_days": unused}
     raise ValueError(f"未知计算器类型：{ctype}")
+
+
+def api_cases(query: dict) -> list:
+    """案例库浏览（T3.3）：?tag=违法解除&region=上海 过滤。"""
+    kc = kconn()
+    sql = """SELECT DISTINCT c.id, c.case_no, c.court, c.gist, c.facts_summary,
+                    c.result, c.license_note, c.verified, r.name AS region,
+                    c.cause, c.trial_level
+             FROM case_record c JOIN region r ON r.id = c.region_id"""
+    args, wheres = [], []
+    if query.get("tag"):
+        sql += " JOIN case_tag ct ON ct.case_id = c.id JOIN dispute_tag dt ON dt.id = ct.tag_id"
+        wheres.append("dt.name = ?")
+        args.append(query["tag"])
+    if query.get("region"):
+        wheres.append("r.name IN (?, '全国')")
+        args.append(query["region"])
+    if wheres:
+        sql += " WHERE " + " AND ".join(wheres)
+    sql += " ORDER BY c.id"
+    rows = kc.execute(sql, args).fetchall()
+    out = []
+    for row in rows:
+        d = dict(zip(("id", "case_no", "court", "gist", "facts_summary", "result",
+                      "license_note", "verified", "region", "cause", "trial_level"), row))
+        title, _, note = (d.pop("license_note") or "").partition("｜")
+        d["title"], d["source_note"] = title or "（未命名案例）", note
+        d["tags"] = [t[0] for t in kc.execute(
+            """SELECT dt.name FROM case_tag ct JOIN dispute_tag dt ON dt.id = ct.tag_id
+               WHERE ct.case_id = ?""", (d["id"],)).fetchall()]
+        d["citations"] = [{"source": c[0], "article": c[1], "clause": c[2],
+                           "text": c[3], "verified": bool(c[4])}
+                          for c in kc.execute(
+                """SELECT ls.title, la.article_no, la.clause_no, la.text, la.verified
+                   FROM case_citation cc
+                   JOIN legal_article la ON la.id = cc.article_id
+                   JOIN legal_source ls ON ls.id = la.source_id
+                   WHERE cc.case_id = ?""", (d["id"],)).fetchall()]
+        out.append(d)
+    kc.close()
+    return out
 
 
 def api_escalate(body: dict) -> dict:
@@ -202,9 +260,15 @@ class Handler(BaseHTTPRequestHandler):
     def log_message(self, fmt, *args):
         sys.stderr.write("[http] %s\n" % (fmt % args))
 
+    def _cors(self):
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+
     def _json(self, obj, code=200):
         data = json.dumps(obj, ensure_ascii=False).encode("utf-8")
         self.send_response(code)
+        self._cors()
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(data)))
         self.end_headers()
@@ -220,6 +284,11 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(data)))
         self.end_headers()
         self.wfile.write(data)
+
+    def do_OPTIONS(self):
+        self.send_response(204)
+        self._cors()
+        self.end_headers()
 
     def do_GET(self):
         p = urlparse(self.path).path
@@ -238,6 +307,13 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json(api_db_regions())
             if p == "/api/entries":
                 return self._json(api_entries())
+            if p == "/api/cases":
+                from urllib.parse import parse_qs
+                qs = parse_qs(urlparse(self.path).query)
+                query = {k: v[0] for k, v in qs.items()}
+                return self._json(api_cases(query))
+            if p == "/api/doc-types":
+                return self._json(pipeline.doc_type_list())
             if p.startswith("/api/entries/"):
                 e = api_entry_detail(p.rsplit("/", 1)[1])
                 return self._json(e if e else {"error": "not found"}, 200 if e else 404)
@@ -254,10 +330,18 @@ class Handler(BaseHTTPRequestHandler):
                 q = (body.get("question") or "").strip()
                 if not q:
                     return self._json({"error": "question 不能为空"}, 400)
-                res = pipeline.answer_structured(q, default_region=body.get("region"))
+                res = pipeline.answer_structured(q, default_region=body.get("region"),
+                                                 session_id=body.get("session_id"))
                 return self._json(res)
             if p == "/api/calc":
                 return self._json(api_calc(body))
+            if p == "/api/draft":
+                return self._json(pipeline.draft_document(
+                    body.get("type", ""), body.get("fields") or {}, body.get("region")))
+            if p == "/api/review":
+                return self._json(pipeline.review_document(
+                    body.get("type", ""), body.get("document", ""),
+                    body.get("fields") or {}, body.get("region")))
             if p == "/api/escalate":
                 return self._json(api_escalate(body))
             return self._json({"error": "not found"}, 404)
@@ -271,9 +355,18 @@ def main() -> None:
     llm.load_env()
     ensure_db()
     port = int(sys.argv[1]) if len(sys.argv) > 1 else 8400
-    srv = ThreadingHTTPServer(("127.0.0.1", port), Handler)
+    # 绑 0.0.0.0 供局域网设备（手机/同事电脑）访问演示；公网部署需加鉴权
+    srv = ThreadingHTTPServer(("0.0.0.0", port), Handler)
     mode = f"DeepSeek（{llm.model_name()}）已接入" if llm.available() else "未配置 LLM，规则引擎模式"
     print(f"LDLAWQ demo 已启动：http://127.0.0.1:{port}   [{mode}]")
+    try:
+        import socket
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        print(f"  局域网访问：http://{s.getsockname()[0]}:{port}")
+        s.close()
+    except OSError:
+        pass
     srv.serve_forever()
 
 

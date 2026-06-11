@@ -30,6 +30,7 @@ CREATE TABLE legal_source (
   status          TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active','revised','repealed')),
   full_text       TEXT,
   source_url      TEXT,
+  coverage        TEXT NOT NULL DEFAULT 'full' CHECK (coverage IN ('full','partial')),
   version         INTEGER NOT NULL DEFAULT 1,
   prev_version_id INTEGER REFERENCES legal_source(id)
 );
@@ -139,6 +140,7 @@ CREATE TABLE case_record (
     ('official_release','licensed_db','partner_lawyer')),
   license_note   TEXT,
   anonymized     INTEGER NOT NULL DEFAULT 1,
+  verified       INTEGER NOT NULL DEFAULT 0,  -- 0 = 未对照官方发布原文核验
   file_key       TEXT
 );
 

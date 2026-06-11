@@ -1,0 +1,36 @@
+{
+ "_comment": "原文为'一、二、三'分段，条号为系统归一化编号。内容已对照 gov.cn 政策库页面（https://www.gov.cn/zhengce/zhengceku/202501/content_6995777.htm）；verified=0 待 G1 逐字核验。",
+ "title": "关于职工全年月平均工作时间和工资折算问题的通知",
+ "doc_no": "劳社部发〔2008〕3号",
+ "issuer": "劳动和社会保障部",
+ "level": "normative_doc",
+ "region": "CN",
+ "publish_date": "2008-01-03",
+ "effective_date": "2008-01-03",
+ "status": "active",
+ "source_url": "https://www.gov.cn/zhengce/zhengceku/202501/content_6995777.htm",
+ "coverage": "full",
+ "articles": [
+  {
+   "article_no": "第一条",
+   "clause_no": null,
+   "text": "制度工作时间的计算。年工作日：365天－104天（休息日）－11天（法定节假日）＝250天。季工作日：250天÷4季＝62.5天/季。月工作日：250天÷12月＝20.83天/月。工作小时数的计算：以月、季、年的工作日乘以每日的8小时。",
+   "topics": ["工时与加班"],
+   "verified": false
+  },
+  {
+   "article_no": "第二条",
+   "clause_no": null,
+   "text": "日工资、小时工资的折算。按照《劳动法》第五十一条的规定，法定节假日用人单位应当依法支付工资，即折算日工资、小时工资时不剔除国家规定的11天法定节假日。据此，日工资、小时工资的折算为：日工资：月工资收入÷月计薪天数。小时工资：月工资收入÷（月计薪天数×8小时）。月计薪天数＝（365天－104天）÷12月＝21.75天。",
+   "topics": ["工资与福利", "工时与加班"],
+   "verified": false
+  },
+  {
+   "article_no": "第三条",
+   "clause_no": null,
+   "text": "2000年3月17日劳动保障部发布的《关于职工全年月平均工作时间和工资折算问题的通知》（劳社部发〔2000〕8号）同时废止。",
+   "topics": ["工资与福利"],
+   "verified": false
+  }
+ ]
+}
