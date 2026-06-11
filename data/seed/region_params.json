@@ -1,0 +1,26 @@
+{
+  "_comment": "地区参数种子。全部为演示占位数值（verified=false），不是真实公布数据；正式使用前由运营按各地官方公布数替换并由律师确认。",
+  "params": [
+    {
+      "region": "上海",
+      "param_key": "social_avg_wage_monthly",
+      "value": { "amount": 12000, "unit": "CNY/月", "note": "演示占位，非真实公布数" },
+      "period": "2025-demo",
+      "verified": false
+    },
+    {
+      "region": "江苏",
+      "param_key": "social_avg_wage_monthly",
+      "value": { "amount": 8500, "unit": "CNY/月", "note": "演示占位，非真实公布数" },
+      "period": "2025-demo",
+      "verified": false
+    },
+    {
+      "region": "上海",
+      "param_key": "min_wage_monthly",
+      "value": { "amount": 2700, "unit": "CNY/月", "note": "演示占位，非真实公布数" },
+      "period": "2025-demo",
+      "verified": false
+    }
+  ]
+}

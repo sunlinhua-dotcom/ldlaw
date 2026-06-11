@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>劳法通 · 劳动法智能百科（内部演示）</title>
+<style>
+/* === CJK Typography Defaults (djhh) === */
+html { hanging-punctuation: allow-end; }
+:root {
+  --ink: #1c2433; --ink-2: #4a5468; --ink-3: #8a90a0;
+  --paper: #f5f3ee; --card: #ffffff; --line: #e4e0d5;
+  --accent: #1f4e9e; --accent-soft: #eef3fb;
+  --warn: #8a5d07; --warn-bg: #fdf4e0; --warn-line: #ecd9a8;
+  --danger: #b4372f; --danger-bg: #fbeeec;
+  --ok: #2f7d4f; --ok-bg: #ebf5ee;
+  --r: 10px;
+}
+* { box-sizing: border-box; margin: 0; }
+body {
+  font-family: -apple-system, "PingFang SC", "Hiragino Sans GB", "Source Han Sans SC",
+               "Microsoft YaHei", "Helvetica Neue", sans-serif;
+  font-feature-settings: "tnum", "palt";
+  background: var(--paper); color: var(--ink);
+  line-height: 1.65; font-size: 15px;
+}
+.app, .app * { word-break: keep-all; overflow-wrap: break-word; }
+h1, h2, h3, h4, .balance { text-wrap: balance; line-height: 1.2; }
+p, li, dd, .pretty { text-wrap: pretty; }
+.num { white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+.wrap { max-width: 1020px; margin: 0 auto; padding: 0 16px; }
+
+/* —— 头部 —— */
+header { background: var(--ink); color: #f2efe7; }
+.head-in { display: flex; align-items: center; gap: 12px; padding: 14px 0; flex-wrap: wrap; }
+.brand { font-family: "Songti SC", "Noto Serif SC", serif; font-size: 26px; font-weight: 700; letter-spacing: 1px; }
+.brand small { font-family: inherit; font-weight: 400; }
+.tag { font-size: 12px; border: 1px solid #5a647a; border-radius: 999px; padding: 2px 10px; color: #c8cedd; white-space: nowrap; }
+.head-right { margin-left: auto; display: flex; align-items: center; gap: 8px; font-size: 13px; color: #c8cedd; }
+.head-right select {
+  font-size: 14px; padding: 5px 8px; border-radius: 8px;
+  border: 1px solid #5a647a; background: #2a3349; color: #f2efe7;
+}
+#llm-badge { font-size: 12px; padding: 2px 10px; border-radius: 999px; background: #2a3349; border: 1px solid #5a647a; white-space: nowrap; }
+
+/* —— 导航 —— */
+nav { position: sticky; top: 0; z-index: 9; background: var(--card); border-bottom: 1px solid var(--line); }
+.nav-in { display: flex; }
+.nav-in button {
+  flex: 1; padding: 12px 4px; font-size: 15px; background: none; border: none;
+  border-bottom: 3px solid transparent; color: var(--ink-2); cursor: pointer; white-space: nowrap;
+}
+.nav-in button.on { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+
+main { padding: 18px 0 90px; }
+.view { display: none; }
+.view.on { display: block; }
+
+.card { background: var(--card); border: 1px solid var(--line); border-radius: var(--r); padding: 16px; }
+.muted { color: var(--ink-3); font-size: 13px; }
+.badge { display: inline-block; font-size: 12px; padding: 1px 9px; border-radius: 999px; white-space: nowrap; vertical-align: 1px; }
+.b-blue { background: var(--accent-soft); color: var(--accent); }
+.b-warn { background: var(--warn-bg); color: var(--warn); border: 1px solid var(--warn-line); }
+.b-ok { background: var(--ok-bg); color: var(--ok); }
+.b-danger { background: var(--danger-bg); color: var(--danger); }
+.b-gray { background: #eeece5; color: var(--ink-2); }
+
+/* —— 问答 —— */
+#msgs { display: flex; flex-direction: column; gap: 14px; min-height: 200px; }
+.m-user { align-self: flex-end; max-width: 88%; background: var(--ink); color: #f2efe7;
+  padding: 10px 14px; border-radius: 14px 14px 4px 14px; }
+.m-bot { align-self: stretch; }
+.ans { background: var(--card); border: 1px solid var(--line); border-radius: var(--r); padding: 14px 16px; }
+.ans .route-line { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+.ans .concl { font-size: 16px; font-weight: 600; max-width: 46ch; }
+.blk { margin-top: 12px; }
+.blk-label { font-size: 12px; color: var(--ink-3); letter-spacing: 2px; margin-bottom: 5px; }
+.steps { padding-left: 18px; display: grid; gap: 4px; font-size: 14px; }
+.cite { border: 1px solid var(--line); border-radius: 8px; margin-top: 6px; background: #fbfaf6; }
+.cite summary { cursor: pointer; padding: 8px 12px; font-size: 14px; list-style: none; }
+.cite summary::-webkit-details-marker { display: none; }
+.cite summary::before { content: "§ "; color: var(--accent); }
+.cite blockquote { margin: 0; padding: 4px 14px 12px; font-size: 13.5px; color: var(--ink-2);
+  border-top: 1px dashed var(--line); max-width: 60ch; }
+.warnbox { background: var(--warn-bg); border: 1px solid var(--warn-line); border-radius: 8px;
+  padding: 9px 12px 9px 28px; font-size: 13.5px; color: var(--warn); display: grid; gap: 3px; }
+.ans-foot { display: flex; align-items: center; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+.disc { font-size: 12px; color: var(--ink-3); }
+.btn-lawyer { margin-left: auto; font-size: 13px; padding: 7px 14px; border-radius: 8px;
+  border: 1px solid var(--danger); color: var(--danger); background: none; cursor: pointer; white-space: nowrap; }
+.btn-lawyer.solid { background: var(--danger); color: #fff; }
+.amount-line { font-size: 15px; }
+.amount-line .num { font-size: 22px; font-weight: 700; color: var(--accent); }
+.chips { display: flex; gap: 8px; flex-wrap: wrap; margin: 14px 0; }
+.chips button { font-size: 13px; padding: 7px 12px; border-radius: 999px; cursor: pointer;
+  border: 1px solid var(--line); background: var(--card); color: var(--ink-2); text-align: left; }
+.chips button:hover { border-color: var(--accent); color: var(--accent); }
+#ask-bar { position: fixed; left: 0; right: 0; bottom: 0; background: var(--card);
+  border-top: 1px solid var(--line); padding: 10px 0 calc(10px + env(safe-area-inset-bottom)); }
+.ask-in { display: flex; gap: 8px; }
+#q { flex: 1; font-size: 16px; font-family: inherit; padding: 11px 14px; border-radius: 10px;
+  border: 1px solid var(--line); resize: none; line-height: 1.5; background: var(--paper); }
+#send { font-size: 15px; padding: 0 22px; border-radius: 10px; border: none;
+  background: var(--accent); color: #fff; cursor: pointer; white-space: nowrap; }
+#send:disabled { opacity: .5; }
+.thinking { color: var(--ink-3); font-size: 14px; }
+.thinking::after { content: "…"; animation: dots 1.2s steps(4) infinite; }
+@keyframes dots { 0% { content: ""; } 25% { content: "·"; } 50% { content: "··"; } 75% { content: "···"; } }
+
+/* —— 计算器 —— */
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+.calc h3 { font-size: 17px; margin-bottom: 4px; }
+.f { display: grid; gap: 4px; margin-top: 10px; font-size: 13.5px; color: var(--ink-2); }
+.f input, .f select { font-size: 16px; padding: 9px 10px; border-radius: 8px;
+  border: 1px solid var(--line); background: #fbfaf6; font-family: inherit; width: 100%; }
+.f-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.chk { display: flex; align-items: center; gap: 7px; margin-top: 12px; font-size: 14px; color: var(--ink-2); }
+.btn { margin-top: 14px; width: 100%; font-size: 15px; padding: 11px; border-radius: 9px;
+  border: none; background: var(--accent); color: #fff; cursor: pointer; }
+.calc-out { margin-top: 14px; border-top: 1px dashed var(--line); padding-top: 12px; display: none; }
+.soon { opacity: .65; }
+
+/* —— 词条 / 知识库 —— */
+.list { display: grid; gap: 10px; }
+.entry-item { cursor: pointer; }
+.entry-item:hover { border-color: var(--accent); }
+.entry-item h3 { font-size: 16px; }
+ol.howto { padding-left: 20px; display: grid; gap: 4px; font-size: 14px; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)); gap: 10px; }
+.stat { background: var(--card); border: 1px solid var(--line); border-radius: var(--r);
+  padding: 12px 14px; }
+.stat .v { font-size: 24px; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.stat .l { font-size: 12.5px; color: var(--ink-3); margin-top: 2px; }
+.sec-title { font-size: 17px; margin: 22px 0 10px; display: flex; align-items: center; gap: 8px; }
+.tbl-wrap { overflow-x: auto; background: var(--card); border: 1px solid var(--line); border-radius: var(--r); }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; min-width: 560px; }
+th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { color: var(--ink-3); font-weight: 500; font-size: 12.5px; white-space: nowrap; background: #fbfaf6; }
+tr:last-child td { border-bottom: none; }
+.art-text { color: var(--ink-2); max-width: 56ch; }
+.note { background: var(--accent-soft); border: 1px solid #cfdcf2; border-radius: var(--r);
+  padding: 12px 14px; font-size: 13.5px; color: #2a4a80; }
+.note code { background: #fff; padding: 1px 6px; border-radius: 5px; font-size: 12.5px; white-space: nowrap; }
+footer { border-top: 1px solid var(--line); padding: 16px 0 110px; margin-top: 30px; }
+
+@media (max-width: 700px) {
+  body { font-size: 14.5px; }
+  .brand { font-size: 21px; }
+  .head-right { width: 100%; margin-left: 0; }
+  .nav-in button { font-size: 14px; padding: 11px 2px; }
+  .f-row { grid-template-columns: 1fr; }
+  .m-user { max-width: 95%; }
+  table { min-width: 480px; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<header>
+  <div class="wrap head-in">
+    <div class="brand">劳法通 <small>· 劳动法智能百科</small></div>
+    <span class="tag">LDLAWQ · M0 内部演示</span>
+    <div class="head-right">
+      <span id="llm-badge">…</span>
+      <label for="region">用工地区</label>
+      <select id="region">
+        <option>上海</option><option>江苏</option><option>浙江</option>
+        <option>北京</option><option>天津</option><option>河北</option>
+        <option>广东</option><option>广州</option><option>深圳</option>
+      </select>
+    </div>
+  </div>
+</header>
+
+<nav><div class="wrap nav-in">
+  <button data-v="chat" class="on">智能问答</button>
+  <button data-v="calc">计算器</button>
+  <button data-v="entries">百科词条</button>
+  <button data-v="db">知识库</button>
+</div></nav>
+
+<main class="wrap">
+
+  <!-- 问答 -->
+  <section id="v-chat" class="view on">
+    <div class="chips" id="chips">
+      <button>员工 2023 年 6 月入职，月薪 15,000 元，协商解除要给多少补偿？</button>
+      <button>协商解除需要给 N+1 吗？</button>
+      <button>入职两个月还没签劳动合同，有什么风险？</button>
+      <button>员工拒绝调岗能直接辞退吗？</button>
+    </div>
+    <div id="msgs"></div>
+  </section>
+
+  <!-- 计算器 -->
+  <section id="v-calc" class="view">
+    <div class="grid">
+      <div class="card calc">
+        <h3>经济补偿金（N / 2N）</h3>
+        <p class="muted pretty">依据《劳动合同法》第四十六、四十七条；违法解除按第八十七条二倍计算。</p>
+        <div class="f-row">
+          <label class="f">入职日期<input type="date" id="s-hire" value="2023-06-01"></label>
+          <label class="f">离职日期<input type="date" id="s-term"></label>
+        </div>
+        <div class="f-row">
+          <label class="f">月平均应发工资（元）<input type="number" id="s-wage" value="15000" min="0"></label>
+          <label class="f">用工城市<select id="s-region"></select></label>
+        </div>
+        <label class="chk"><input type="checkbox" id="s-2n">按违法解除计算赔偿金（2N）</label>
+        <button class="btn" id="s-go">计算</button>
+        <div class="calc-out" id="s-out"></div>
+      </div>
+
+      <div class="card calc">
+        <h3>离职未休年假折算</h3>
+        <p class="muted pretty">依据《职工带薪年休假条例》及实施办法，300% 口径含正常工资。</p>
+        <div class="f-row">
+          <label class="f">月工资（元）<input type="number" id="a-wage" value="8700" min="0"></label>
+          <label class="f">累计工龄（年）<input type="number" id="a-years" value="12" min="0"></label>
+        </div>
+        <div class="f-row">
+          <label class="f">今年已休年假（天）<input type="number" id="a-taken" value="0" min="0"></label>
+          <label class="f">离职日期<input type="date" id="a-term"></label>
+        </div>
+        <button class="btn" id="a-go">计算</button>
+        <div class="calc-out" id="a-out"></div>
+      </div>
+
+      <div class="card calc soon">
+        <h3>更多计算器 · M1 排期</h3>
+        <p class="muted pretty">加班费（1.5 / 2 / 3 倍）、病假工资与医疗期、产假与生育津贴、试用期合法性、竞业限制补偿、渐进式延迟退休测算。</p>
+        <p class="muted pretty" style="margin-top:8px">全部为确定性规则计算——AI 只负责问清参数，算钱永远走代码。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 词条 -->
+  <section id="v-entries" class="view">
+    <div class="list" id="entry-list"><div class="muted">加载中…</div></div>
+    <div id="entry-detail" style="margin-top:14px"></div>
+  </section>
+
+  <!-- 知识库 -->
+  <section id="v-db" class="view">
+    <div class="note" style="margin-bottom:14px">
+      数据库为<strong>双库架构</strong>：<code>db/knowledge.db</code>（法规 / 词条 / 参数，只读，整库替换发布）
+      ＋ <code>db/app.db</code>（问答日志 / 转介工单，WAL 读写）。本页内容实时读自 knowledge.db。
+    </div>
+    <div class="stats" id="db-stats"></div>
+    <h3 class="sec-title">法规库 <span class="badge b-gray" id="src-count"></span></h3>
+    <div class="tbl-wrap"><table id="tbl-sources"></table></div>
+    <h3 class="sec-title">法条（引用校验基准表）<span class="badge b-gray" id="art-count"></span></h3>
+    <div class="tbl-wrap"><table id="tbl-articles"></table></div>
+    <h3 class="sec-title">地区参数（计算器数据源）<span class="badge b-gray" id="param-count"></span></h3>
+    <div class="tbl-wrap"><table id="tbl-params"></table></div>
+    <h3 class="sec-title">覆盖地区</h3>
+    <div class="tbl-wrap"><table id="tbl-regions"></table></div>
+  </section>
+
+  <footer class="muted pretty">
+    本系统输出内容仅供参考，不构成法律意见；具体个案请咨询执业律师。
+    演示版法条与参数未经官方源核验（界面已逐项标 ⚠），生产发布门槛为未核验数 = 0。
+  </footer>
+</main>
+
+<div id="ask-bar"><div class="wrap ask-in">
+  <textarea id="q" rows="1" placeholder="描述你的情况，例如：苏州员工工作 3 年 7 个月，月薪 8,500 元，想协商解除…"></textarea>
+  <button id="send">发送</button>
+</div></div>
+
+</div>
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const nf = n => Number(n).toLocaleString("zh-CN", {maximumFractionDigits: 2});
+const api = (p, body) => fetch(p, body ? {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(body)} : {}).then(r => r.json());
+const region = () => $("#region").value;
+
+/* —— 导航 —— */
+document.querySelectorAll(".nav-in button").forEach(b => b.onclick = () => {
+  document.querySelectorAll(".nav-in button").forEach(x => x.classList.remove("on"));
+  document.querySelectorAll(".view").forEach(x => x.classList.remove("on"));
+  b.classList.add("on");
+  $("#v-" + b.dataset.v).classList.add("on");
+  $("#ask-bar").style.display = b.dataset.v === "chat" ? "" : "none";
+});
+
+/* —— 问答 —— */
+const ROUTE_LABEL = {calculator:["计算器 · 确定性计算","b-blue"], entry_hit:["命中百科词条","b-ok"],
+  rag:["检索生成 · 已过双重校验","b-blue"], clarify:["要素确认","b-gray"], refuse:["拒答 · 建议转律师","b-danger"]};
+
+function citeHtml(c) {
+  const clause = c.clause ? `第${esc(c.clause)}款` : "";
+  const flag = c.verified ? "" : ` <span class="badge b-warn">⚠ 待核验</span>`;
+  return `<details class="cite"><summary>《${esc(c.source)}》${esc(c.article)}${clause}${flag}</summary>
+    <blockquote>${esc(c.text)}</blockquote></details>`;
+}
+
+function answerHtml(a) {
+  const [label, cls] = ROUTE_LABEL[a.route] || ["回答","b-gray"];
+  let h = `<div class="ans"><div class="route-line"><span class="badge ${cls}">${label}</span>`;
+  h += `<span class="badge b-gray">${a.llm_used ? "DeepSeek 管线" : "规则引擎"}</span>`;
+  if (a.region) h += `<span class="badge b-gray">地区：${esc(a.region)}</span>`;
+  h += `</div>`;
+  h += `<div class="concl pretty">${esc(a.conclusion)}</div>`;
+  if (a.clarify && a.clarify.length)
+    h += `<div class="blk"><ul class="steps">${a.clarify.map(x => `<li>${esc(x)}</li>`).join("")}</ul></div>`;
+  if (a.amount != null)
+    h += `<div class="blk amount-line">测算金额 <span class="num">¥ ${nf(a.amount)}</span></div>`;
+  if (a.steps && a.steps.length)
+    h += `<div class="blk"><div class="blk-label">计算过程</div><ol class="steps">${a.steps.map(s => `<li>${esc(s)}</li>`).join("")}</ol></div>`;
+  if (a.analysis)
+    h += `<div class="blk"><div class="blk-label">分析</div><p class="pretty" style="max-width:52ch;font-size:14px">${esc(a.analysis)}</p></div>`;
+  if (a.entry && a.entry.how_to && a.entry.how_to.length)
+    h += `<div class="blk"><div class="blk-label">操作指引</div><ol class="howto">${a.entry.how_to.map(s => `<li>${esc(s)}</li>`).join("")}</ol></div>`;
+  if (a.citations && a.citations.length)
+    h += `<div class="blk"><div class="blk-label">法条依据（点开看原文）</div>${a.citations.map(citeHtml).join("")}</div>`;
+  if (a.warnings && a.warnings.length)
+    h += `<div class="blk warnbox">${a.warnings.map(w => `<div>· ${esc(w)}</div>`).join("")}</div>`;
+  h += `<div class="ans-foot"><span class="disc">内容仅供参考，不构成法律意见</span>
+    <button class="btn-lawyer ${a.escalate ? "solid" : ""}" onclick="escalate(this)">咨询合作律师 →</button></div></div>`;
+  return h;
+}
+
+let lastQuestion = "";
+async function ask(q) {
+  lastQuestion = q;
+  const msgs = $("#msgs");
+  msgs.insertAdjacentHTML("beforeend", `<div class="m-user pretty">${esc(q)}</div>`);
+  const hold = document.createElement("div");
+  hold.className = "m-bot";
+  hold.innerHTML = `<div class="ans thinking">正在确认要素并检索知识库</div>`;
+  msgs.appendChild(hold);
+  hold.scrollIntoView({behavior:"smooth", block:"end"});
+  $("#send").disabled = true;
+  try {
+    const a = await api("/api/ask", {question: q, region: region()});
+    hold.innerHTML = a.error ? `<div class="ans">出错了：${esc(a.error)}</div>` : answerHtml(a);
+  } catch (e) {
+    hold.innerHTML = `<div class="ans">网络错误：${esc(e.message)}</div>`;
+  }
+  $("#send").disabled = false;
+  hold.scrollIntoView({behavior:"smooth", block:"end"});
+}
+
+async function escalate(btn) {
+  btn.disabled = true;
+  const r = await api("/api/escalate", {question: lastQuestion || "（页面发起）", region: region()});
+  btn.outerHTML = `<span class="badge b-danger">已建转介工单 #${r.referral_id}，待律师接单（演示）</span>`;
+}
+
+$("#send").onclick = () => { const q = $("#q").value.trim(); if (q) { $("#q").value = ""; ask(q); } };
+$("#q").addEventListener("keydown", e => {
+  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); $("#send").click(); }
+});
+$("#chips").addEventListener("click", e => { if (e.target.tagName === "BUTTON") ask(e.target.textContent.trim()); });
+
+/* —— 计算器 —— */
+const today = new Date().toISOString().slice(0, 10);
+$("#s-term").value = today; $("#a-term").value = today;
+["上海","江苏","浙江","北京","天津","河北","广东","广州","深圳"].forEach(r =>
+  $("#s-region").insertAdjacentHTML("beforeend", `<option>${r}</option>`));
+
+function calcOutHtml(r) {
+  if (r.error) return `<p class="muted">出错：${esc(r.error)}</p>`;
+  let h = `<div class="amount-line">应付 <span class="num">¥ ${nf(r.amount)}</span></div>
+    <ol class="steps" style="margin-top:8px">${r.steps.map(s => `<li>${esc(s)}</li>`).join("")}</ol>`;
+  if (r.citations.length) h += `<div style="margin-top:8px">${r.citations.map(citeHtml).join("")}</div>`;
+  if (r.warnings.length) h += `<div class="warnbox" style="margin-top:8px">${r.warnings.map(w => `<div>· ${esc(w)}</div>`).join("")}</div>`;
+  return h;
+}
+$("#s-go").onclick = async () => {
+  const out = $("#s-out"); out.style.display = "block"; out.innerHTML = "计算中…";
+  out.innerHTML = calcOutHtml(await api("/api/calc", {
+    type: $("#s-2n").checked ? "unlawful" : "severance",
+    hire_date: $("#s-hire").value, term_date: $("#s-term").value,
+    monthly_wage: $("#s-wage").value, region: $("#s-region").value }));
+};
+$("#a-go").onclick = async () => {
+  const out = $("#a-out"); out.style.display = "block"; out.innerHTML = "计算中…";
+  out.innerHTML = calcOutHtml(await api("/api/calc", {
+    type: "annual", monthly_wage: $("#a-wage").value,
+    cumulative_years: $("#a-years").value, taken_days: $("#a-taken").value,
+    term_date: $("#a-term").value }));
+};
+
+/* —— 词条 —— */
+const STATUS_ZH = {published:["已发布 · 律师审核","b-ok"], in_review:["待律师审核","b-warn"],
+  draft:["草稿","b-gray"], needs_recheck:["待复审","b-warn"]};
+async function loadEntries() {
+  const list = await api("/api/entries");
+  $("#entry-list").innerHTML = list.map(e => {
+    const [s, c] = STATUS_ZH[e.status] || [e.status, "b-gray"];
+    return `<div class="card entry-item" data-slug="${esc(e.slug)}">
+      <h3 class="balance">${esc(e.title)} <span class="badge ${c}">${s}</span></h3>
+      <div class="muted">主题：${esc(e.topic || "—")} · 依据版本 ${esc(e.basis_date || "—")}</div></div>`;
+  }).join("") || `<div class="muted">暂无词条</div>`;
+}
+$("#entry-list").addEventListener("click", async e => {
+  const item = e.target.closest(".entry-item"); if (!item) return;
+  const d = await api("/api/entries/" + item.dataset.slug);
+  const [s, c] = STATUS_ZH[d.status] || [d.status, "b-gray"];
+  $("#entry-detail").innerHTML = `<div class="card">
+    <h3 class="balance">${esc(d.title)} <span class="badge ${c}">${s}</span></h3>
+    <p class="pretty" style="max-width:46ch;margin-top:8px;font-weight:600">${esc(d.body.conclusion)}</p>
+    ${d.body.how_to ? `<div class="blk"><div class="blk-label">操作指引</div><ol class="howto">${d.body.how_to.map(x => `<li>${esc(x)}</li>`).join("")}</ol></div>` : ""}
+    ${d.body.pitfalls ? `<div class="blk warnbox">${d.body.pitfalls.map(x => `<div>· ${esc(x)}</div>`).join("")}</div>` : ""}
+    <div class="blk"><div class="blk-label">法条依据</div>${d.citations.map(citeHtml).join("")}</div>
+  </div>`;
+  $("#entry-detail").scrollIntoView({behavior:"smooth"});
+});
+
+/* —— 知识库 —— */
+const LEVEL_ZH = {law:"法律", admin_reg:"行政法规", judicial_interp:"司法解释", dept_rule:"部门规章",
+  local_reg:"地方性法规", local_rule:"地方政府规章", normative_doc:"规范性文件"};
+async function loadDb() {
+  const s = await api("/api/db/summary");
+  $("#llm-badge").textContent = s.llm ? `LLM：${s.llm}` : "规则引擎模式";
+  $("#db-stats").innerHTML = [
+    [s.sources, "法规（部）"], [s.articles, "法条（条）"],
+    [s.articles_unverified, "待核验法条 ⚠"], [s.entries, "百科词条"],
+    [s.params, "地区参数"], [s.regions, "覆盖地区"],
+    [s.qa_logged, "问答日志（条）"], [s.referrals, "转介工单"],
+  ].map(([v, l]) => `<div class="stat"><div class="v">${nf(v)}</div><div class="l">${l}</div></div>`).join("");
+
+  const srcs = await api("/api/db/sources");
+  $("#src-count").textContent = srcs.length + " 部";
+  $("#tbl-sources").innerHTML = `<tr><th>法规名称</th><th>层级</th><th>文号</th><th>地区</th><th>生效</th><th>条数</th><th>状态</th></tr>` +
+    srcs.map(x => `<tr><td>${esc(x.title)}</td><td>${LEVEL_ZH[x.level] || x.level}</td>
+      <td>${esc(x.doc_no || "—")}</td><td>${esc(x.region)}</td>
+      <td class="num">${esc(x.effective_date || "—")}</td><td class="num">${x.articles}</td>
+      <td><span class="badge ${x.status === "active" ? "b-ok" : "b-warn"}">${x.status === "active" ? "现行有效" : x.status}</span></td></tr>`).join("");
+
+  const arts = await api("/api/db/articles");
+  $("#art-count").textContent = arts.length + " 条";
+  $("#tbl-articles").innerHTML = `<tr><th>法规</th><th>条款</th><th>原文</th><th>核验</th></tr>` +
+    arts.map(x => `<tr><td>${esc(x.source)}</td>
+      <td style="white-space:nowrap">${esc(x.article_no)}${x.clause_no ? "第" + esc(x.clause_no) + "款" : ""}</td>
+      <td class="art-text pretty">${esc(x.text)}</td>
+      <td>${x.verified ? `<span class="badge b-ok">✓ 已核验</span>` : `<span class="badge b-warn">⚠ 待核验</span>`}</td></tr>`).join("");
+
+  const params = await api("/api/db/params");
+  $("#param-count").textContent = params.length + " 项";
+  $("#tbl-params").innerHTML = `<tr><th>地区</th><th>参数</th><th>数值</th><th>期间</th><th>核验</th></tr>` +
+    params.map(x => `<tr><td>${esc(x.region)}</td><td>${esc(x.param_key)}</td>
+      <td class="num">${nf(x.value.amount)} ${esc(x.value.unit || "")}</td><td>${esc(x.period)}</td>
+      <td>${x.verified ? `<span class="badge b-ok">✓</span>` : `<span class="badge b-warn">⚠ 占位</span>`}</td></tr>`).join("");
+
+  const regions = await api("/api/db/regions");
+  $("#tbl-regions").innerHTML = `<tr><th>名称</th><th>层级</th><th>区划码</th><th>上级</th></tr>` +
+    regions.map(x => `<tr><td>${esc(x.name)}</td>
+      <td>${{country:"国家层", province:"省级", city:"市级"}[x.level]}</td>
+      <td class="num">${esc(x.code)}</td><td>${esc(x.parent || "—")}</td></tr>`).join("");
+}
+
+loadEntries(); loadDb();
+</script>
+</body>
+</html>

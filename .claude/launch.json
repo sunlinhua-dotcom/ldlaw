@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "ldlawq-web",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["src/server.py", "8400"],
+      "port": 8400,
+      "autoPort": false
+    }
+  ]
+}
