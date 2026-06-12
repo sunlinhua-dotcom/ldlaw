@@ -3,3 +3,5 @@ db/
 __pycache__/
 *.pyc
 .DS_Store
+data/verify_report.md
+data/raw/*.fetch.txt

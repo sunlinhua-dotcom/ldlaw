@@ -248,8 +248,12 @@ def build_knowledge() -> None:
     print(f"  引用校验：词条+计算器全部通过；案例引用丢弃 {dropped_cites} 条；"
           f"FTS5 索引：{'已建' if fts_ok else '本机 SQLite 不支持，已跳过（检索自动降级）'}")
     if unverified_articles or unverified_params or unverified_cases:
+        verified_art = n_art - unverified_articles
+        pct = (verified_art / n_art * 100) if n_art else 0
         print(f"  ⚠ 待核验：法条 {unverified_articles} / 参数 {unverified_params} / "
               f"案例 {unverified_cases}（演示可用；生产发布门槛 = 0，见 PRD §10）")
+        print(f"  法条核验覆盖率：{verified_art}/{n_art} = {pct:.1f}%"
+              f"（明细 python3 src/verify_articles.py --status）")
 
 
 def build_app() -> None:
