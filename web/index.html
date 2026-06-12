@@ -383,6 +383,10 @@ ol.howto li::before {
 }
 .doc-form-card textarea:focus { outline: none; border-color: var(--seal); box-shadow: 0 0 0 3px var(--seal-pale); background: var(--card); }
 .req-star { color: var(--seal); }
+/* 必填行内校验（替代 alert） */
+.f-err input, .f-err textarea { border-color: var(--seal); background: var(--seal-pale); }
+.form-msg { display: none; margin-top: 10px; font-size: 13px; color: var(--seal-deep); }
+.form-msg.on { display: block; }
 /* 公文纸输出 */
 .doc-paper {
   background: #fffefb; border: 1px solid var(--line); border-radius: 4px;
@@ -466,12 +470,14 @@ ol.howto li::before {
 
 /* ============ 案例库 ============ */
 .filter-bar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 18px; }
-.filter-bar select {
+.filter-bar select, .filter-bar input {
   font-size: 14px; padding: 8px 13px; border-radius: 9px;
   border: 1.5px solid var(--line); background: var(--card); color: var(--ink);
   font-family: inherit;
 }
-.filter-bar select:focus { outline: none; border-color: var(--seal); }
+.filter-bar input { flex: 1; min-width: 150px; max-width: 320px; }
+.filter-bar select:focus, .filter-bar input:focus { outline: none; border-color: var(--seal); }
+.filter-hint { font-size: 12.5px; color: var(--ink-3); }
 .case-cards { display: grid; gap: 15px; }
 .case-card {
   background: var(--card); border: 1px solid var(--line); border-radius: 14px;
@@ -746,6 +752,7 @@ footer p { font-size: 12.5px; color: var(--ink-3); max-width: 56ch; }
             <h3 id="doc-form-title" class="balance">—</h3>
             <p class="muted pretty" id="doc-form-desc"></p>
             <div id="doc-fields"></div>
+            <div class="form-msg" id="doc-form-msg"></div>
             <button class="btn" id="doc-go">生 成 文 书</button>
           </div>
         </div>
@@ -817,7 +824,6 @@ footer p { font-size: 12.5px; color: var(--ink-3); max-width: 56ch; }
           <option>上海</option><option>江苏</option><option>浙江</option>
           <option>北京</option><option>天津</option><option>广东</option>
         </select>
-        <button class="chip" id="case-load">筛 选</button>
       </div>
       <div class="case-cards" id="case-cards"></div>
     </section>
@@ -838,6 +844,11 @@ footer p { font-size: 12.5px; color: var(--ink-3); max-width: 56ch; }
       <h3 class="sec-title">法规库 <span class="count-tag" id="src-count"></span></h3>
       <div class="tbl-wrap"><table id="tbl-sources"></table></div>
       <h3 class="sec-title">法条 · 引用校验基准 <span class="count-tag" id="art-count"></span></h3>
+      <div class="filter-bar">
+        <select id="art-src"><option value="">全部法规</option></select>
+        <input type="search" id="art-q" placeholder="搜条号或关键词，如：八十二 / 二倍工资">
+        <span class="filter-hint" id="art-hint"></span>
+      </div>
       <div class="tbl-wrap"><table id="tbl-articles"></table></div>
       <h3 class="sec-title">地区参数 <span class="count-tag" id="param-count"></span></h3>
       <div class="tbl-wrap"><table id="tbl-params"></table></div>
@@ -854,7 +865,7 @@ footer p { font-size: 12.5px; color: var(--ink-3); max-width: 56ch; }
 
 <!-- 提问栏 -->
 <div id="ask-bar"><div class="ask-in">
-  <textarea id="q" rows="1" placeholder="描述情况，例：苏州员工工作 3 年 7 个月，月薪 8,500 元，协商解除…"></textarea>
+  <textarea id="q" rows="1" placeholder="描述用工情况，回车发送"></textarea>
   <button id="send">发送</button>
 </div></div>
 
@@ -887,11 +898,10 @@ const VIEW_META = {
   db:      ['知识库', '只读法规库 · 引用校验的唯一基准'],
 };
 let casesLoaded = false;
-document.querySelectorAll('.rail-btn').forEach(b => b.onclick = () => {
-  document.querySelectorAll('.rail-btn').forEach(x => x.classList.remove('on'));
+function switchView(v) {
+  if (!VIEW_META[v]) return;
+  document.querySelectorAll('.rail-btn').forEach(x => x.classList.toggle('on', x.dataset.v === v));
   document.querySelectorAll('.view').forEach(x => x.classList.remove('on'));
-  b.classList.add('on');
-  const v = b.dataset.v;
   $('#v-' + v).classList.add('on');
   const [t, s] = VIEW_META[v];
   $('#view-title').textContent = t;
@@ -899,7 +909,23 @@ document.querySelectorAll('.rail-btn').forEach(b => b.onclick = () => {
   $('#ask-bar').style.display = v === 'chat' ? '' : 'none';
   if (v === 'cases' && !casesLoaded) loadCases();
   if (v === 'doc' && !docTypes.length) loadDocTypes();
-});
+  if (location.hash !== '#' + v) history.replaceState(null, '', '#' + v);  // 刷新不丢页签
+}
+document.querySelectorAll('.rail-btn').forEach(b => b.onclick = () => switchView(b.dataset.v));
+
+/* —— 等待动画：阶段文案轮换（长等待不再只有三个点） —— */
+function thinkingHtml(stages) {
+  return `<div class="ans thinking"><span class="th-txt">${esc(stages[0])}</span>
+    <div class="dots"><span></span><span></span><span></span></div></div>`;
+}
+function rotateThinking(box, stages) {
+  let i = 0;
+  const t = setInterval(() => {
+    const el = box.querySelector('.th-txt');
+    if (!el) { clearInterval(t); return; }   // 结果渲染后自动停
+    el.textContent = stages[++i % stages.length];
+  }, 3200);
+}
 
 /* —— 引用渲染 —— */
 function citeHtml(c) {
@@ -932,7 +958,7 @@ const ROUTE_LABEL = {
   clarify:    ['要素确认', 'b-gray'],
   refuse:     ['拒答 · 建议转律师', 'b-gold'],
 };
-function answerHtml(a) {
+function answerHtml(a, q) {
   const [label, cls] = ROUTE_LABEL[a.route] || ['回答', 'b-gray'];
   let h = `<div class="ans"><div class="route-bar">
     <span class="badge ${cls}">${label}</span>
@@ -964,24 +990,31 @@ function answerHtml(a) {
   if (a.warnings && a.warnings.length)
     h += `<div class="blk warnbox">${a.warnings.map(w => `<div class="pretty">${esc(w)}</div>`).join('')}</div>`;
   h += `<div class="ans-foot"><span class="disc">内容仅供参考，不构成法律意见</span>
-    <button class="btn-lawyer${a.escalate ? ' solid' : ''}" onclick="escalate(this)">咨询合作律师 →</button>
+    <button class="btn-lawyer${a.escalate ? ' solid' : ''}" data-q="${esc(q || '')}" onclick="escalate(this)">咨询合作律师 →</button>
   </div></div>`;
   return h;
 }
 
-let lastQuestion = '';
 let sessionId = null;
+const ASK_STAGES = ['解析问题要素', '检索库内法条', '生成回答', '核验引用与数字'];
+/* 会话持久化：刷新不丢对话（仅当前标签页，sessionStorage） */
+function saveChat() {
+  try {
+    sessionStorage.setItem('lq.msgs', $('#msgs').innerHTML);
+    sessionStorage.setItem('lq.sid', sessionId == null ? '' : String(sessionId));
+    sessionStorage.setItem('lq.aside', $('#aside-body').innerHTML);
+  } catch (e) { /* 存储不可用则放弃持久化 */ }
+}
 async function ask(q) {
-  lastQuestion = q;
   const msgs = $('#msgs');
   const empt = msgs.querySelector('#chat-empty');
   if (empt) empt.remove();
   msgs.insertAdjacentHTML('beforeend', `<div class="m-user pretty">${esc(q)}</div>`);
   const hold = document.createElement('div');
   hold.className = 'm-bot';
-  hold.innerHTML = `<div class="ans thinking">检索知识库并核验引用
-    <div class="dots"><span></span><span></span><span></span></div></div>`;
+  hold.innerHTML = thinkingHtml(ASK_STAGES);
   msgs.appendChild(hold);
+  rotateThinking(hold, ASK_STAGES);
   hold.scrollIntoView({behavior:'smooth', block:'end'});
   $('#send').disabled = true;
   try {
@@ -990,19 +1023,29 @@ async function ask(q) {
       hold.innerHTML = `<div class="ans"><p style="color:var(--seal-deep)">出错：${esc(a.error)}</p></div>`;
     } else {
       if (a.session_id) sessionId = a.session_id;
-      hold.innerHTML = answerHtml(a);
+      hold.innerHTML = answerHtml(a, q);
       updateAside(a.citations || []);
     }
   } catch(e) {
     hold.innerHTML = `<div class="ans"><p style="color:var(--seal-deep)">网络错误：${esc(e.message)}</p></div>`;
   }
   $('#send').disabled = false;
+  saveChat();
   hold.scrollIntoView({behavior:'smooth', block:'end'});
 }
 async function escalate(btn) {
   btn.disabled = true;
-  const r = await api('/api/escalate', {question: lastQuestion || '（页面发起）', region: region()});
-  btn.outerHTML = `<span class="badge b-seal">已建转介工单 #${r.referral_id} · 待律师接单（演示）</span>`;
+  const old = btn.textContent;
+  try {
+    // 问题文本随消息携带（data-q），点旧回答的按钮不会错挂到新问题
+    const r = await api('/api/escalate', {question: btn.dataset.q || '（页面发起）', region: region()});
+    btn.outerHTML = `<span class="badge b-seal">已建转介工单 #${r.referral_id} · 待律师接单（演示）</span>`;
+    saveChat();
+  } catch (e) {
+    btn.disabled = false;
+    btn.textContent = '提交失败，点击重试';
+    setTimeout(() => { btn.textContent = old; }, 2600);
+  }
 }
 $('#send').onclick = () => { const q = $('#q').value.trim(); if (q) { $('#q').value = ''; $('#q').style.height = 'auto'; ask(q); } };
 $('#q').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); $('#send').click(); } });
@@ -1035,21 +1078,37 @@ function selectDocType(key) {
 $('#doc-types').addEventListener('click', e => {
   const b = e.target.closest('.doc-type'); if (b) selectDocType(b.dataset.k);
 });
+// 必填行内校验：输入即清除错误态
+$('#doc-fields').addEventListener('input', e => {
+  const f = e.target.closest('.f'); if (f) f.classList.remove('f-err');
+  $('#doc-form-msg').classList.remove('on');
+});
+const DRAFT_STAGES = ['整理文书要素', '检索关联法条', 'DeepSeek 起草初稿', '核验引用'];
 $('#doc-go').onclick = async () => {
   if (!docSel) return;
   const fields = {};
-  let missing = null;
   document.querySelectorAll('#doc-fields [data-f]').forEach(el => {
     fields[el.dataset.f] = el.value.trim();
   });
-  for (const f of docSel.fields)
-    if (f.req && !fields[f.key]) { missing = f.label; break; }
-  if (missing) { alert('请先填写必填项：' + missing); return; }
+  document.querySelectorAll('#doc-fields .f-err').forEach(el => el.classList.remove('f-err'));
+  const missing = docSel.fields.filter(f => f.req && !fields[f.key]);
+  if (missing.length) {
+    missing.forEach(f => {
+      const el = document.querySelector(`#doc-fields [data-f="${f.key}"]`);
+      if (el) el.closest('.f').classList.add('f-err');
+    });
+    const msg = $('#doc-form-msg');
+    msg.textContent = '请填写必填项：' + missing.map(f => f.label).join('、');
+    msg.classList.add('on');
+    const first = document.querySelector(`#doc-fields [data-f="${missing[0].key}"]`);
+    if (first) first.focus();
+    return;
+  }
   const out = $('#doc-out');
   const btn = $('#doc-go');
   btn.disabled = true; btn.textContent = '起草中…（约 30 秒）';
-  out.innerHTML = `<div class="ans thinking" style="margin-top:34px">DeepSeek 正在起草并核验引用
-    <div class="dots"><span></span><span></span><span></span></div></div>`;
+  out.innerHTML = `<div style="margin-top:34px">${thinkingHtml(DRAFT_STAGES)}</div>`;
+  rotateThinking(out, DRAFT_STAGES);
   try {
     const r = await api('/api/draft', {type: docSel.key, fields, region: region()});
     if (r.error) throw new Error(r.error);
@@ -1106,12 +1165,13 @@ const SEV = {
   risk:    ['风险', 'f-risk', 'sev-risk'],
   polish:  ['润色', 'f-polish', 'sev-polish'],
 };
+const REVIEW_STAGES = ['AI 律师逐项核对清单', '比对库内法条', '汇总审核意见'];
 async function runReview() {
   if (!lastDoc) return;
   const box = $('#doc-review');
   if (!box) return;
-  box.innerHTML = `<div class="ans thinking" style="margin-top:20px">AI 律师正在逐项审核（约 30 秒）
-    <div class="dots"><span></span><span></span><span></span></div></div>`;
+  box.innerHTML = `<div style="margin-top:20px">${thinkingHtml(REVIEW_STAGES)}</div>`;
+  rotateThinking(box, REVIEW_STAGES);
   try {
     const r = await api('/api/review', {type: lastDoc._type, document: lastDoc.document,
                                         fields: lastDoc._fields, region: region()});
@@ -1159,8 +1219,9 @@ function reviewHtml(r) {
 /* —— 计算器 —— */
 const today = new Date().toISOString().slice(0, 10);
 ['#s-term', '#a-term'].forEach(id => { const el = $(id); if (el) el.value = today; });
-['上海','江苏','浙江','北京','天津','河北','广东','广州','深圳'].forEach(r =>
-  $('#s-region').insertAdjacentHTML('beforeend', `<option>${r}</option>`));
+// 启动兜底：先复用顶栏静态列表（唯一硬编码来源）；loadDb 拉到 /api/db/regions 后统一重建
+$('#region').querySelectorAll('option').forEach(o =>
+  $('#s-region').insertAdjacentHTML('beforeend', `<option>${esc(o.textContent)}</option>`));
 function calcOutHtml(r) {
   if (r.error) return `<p style="color:var(--seal-deep);font-size:14px">出错：${esc(r.error)}</p>`;
   let h = `<div class="stamp-wrap" style="margin-bottom:13px"><div class="stamp">
@@ -1228,7 +1289,8 @@ async function loadCases() {
     cards.innerHTML = `<div class="empty-state"><p style="color:var(--seal-deep)">加载失败：${esc(e.message)}</p></div>`;
   }
 }
-$('#case-load').onclick = () => loadCases();
+$('#case-tag').onchange = () => loadCases();    // 选中即筛，无需按钮
+$('#case-region').onchange = () => loadCases();
 
 /* —— 词条 —— */
 const STATUS_ZH = {
@@ -1270,6 +1332,51 @@ const LEVEL_ZH = {
   local_rule: '地方政府规章', normative_doc: '规范性文件',
 };
 const RLEVEL = {country: '国家层', province: '省级', city: '市级'};
+
+/* 法条表：719+ 条不能一次性渲染（实测整页 9 万 px）——筛选 + 搜索 + 截断 */
+let allArts = [];
+const ART_PAGE = 80;
+function renderArticles() {
+  const src = $('#art-src').value;
+  const q = $('#art-q').value.trim();
+  let rows = allArts;
+  if (src) rows = rows.filter(x => x.source === src);
+  if (q) rows = rows.filter(x =>
+    (x.article_no || '').includes(q) || (x.text || '').includes(q) || (x.source || '').includes(q));
+  $('#tbl-articles').innerHTML =
+    '<tr><th>法规</th><th>条款</th><th>原文</th><th>核验</th></tr>' +
+    rows.slice(0, ART_PAGE).map(x => `<tr><td style="font-size:12px;white-space:nowrap">${esc(x.source)}</td>
+      <td class="num" style="white-space:nowrap">${esc(x.article_no)}${x.clause_no ? '第' + esc(x.clause_no) + '款' : ''}</td>
+      <td class="art-text pretty">${esc(x.text)}</td>
+      <td>${x.verified ? '<span class="v-tag v-ok">已核验</span>' : '<span class="v-tag v-warn">待核验</span>'}</td></tr>`).join('');
+  $('#art-hint').textContent = rows.length > ART_PAGE
+    ? `命中 ${rows.length.toLocaleString('zh-CN')} 条，显示前 ${ART_PAGE} 条，可选法规或输入关键词缩小范围`
+    : `命中 ${rows.length.toLocaleString('zh-CN')} 条`;
+}
+$('#art-src').onchange = renderArticles;
+$('#art-q').oninput = renderArticles;
+
+/* 地区选择器：以 /api/db/regions 为唯一来源，省→市分组重建（顶栏 + 计算器） */
+function fillRegionSelects(regions) {
+  const provs = regions.filter(r => r.level === 'province');
+  const cities = regions.filter(r => r.level === 'city');
+  let html = '';
+  for (const p of provs) {
+    const kids = cities.filter(c => c.parent === p.name);
+    html += kids.length
+      ? `<optgroup label="${esc(p.name)}"><option value="${esc(p.name)}">${esc(p.name)}（全省）</option>`
+        + kids.map(c => `<option>${esc(c.name)}</option>`).join('') + `</optgroup>`
+      : `<option>${esc(p.name)}</option>`;
+  }
+  ['#region', '#s-region'].forEach(id => {
+    const sel = $(id); if (!sel) return;
+    const prev = sel.value;
+    sel.innerHTML = html;
+    sel.value = prev;
+    if (!sel.value) sel.value = '上海';
+  });
+}
+
 async function loadDb() {
   const s = await api('/api/db/summary');
   if (s.llm) { $('#llm-text').textContent = s.llm; $('#llm-dot').classList.add('on'); }
@@ -1291,14 +1398,11 @@ async function loadDb() {
       <td class="num">${esc(x.effective_date || '—')}</td><td class="num">${x.articles}</td>
       <td><span class="v-tag ${x.status === 'active' ? 'v-ok' : 'v-warn'}">${x.status === 'active' ? '现行有效' : x.status}</span></td></tr>`).join('');
 
-  const arts = await api('/api/db/articles');
-  $('#art-count').textContent = arts.length + ' 条';
-  $('#tbl-articles').innerHTML =
-    '<tr><th>法规</th><th>条款</th><th>原文</th><th>核验</th></tr>' +
-    arts.map(x => `<tr><td style="font-size:12px;white-space:nowrap">${esc(x.source)}</td>
-      <td class="num" style="white-space:nowrap">${esc(x.article_no)}${x.clause_no ? '第' + esc(x.clause_no) + '款' : ''}</td>
-      <td class="art-text pretty">${esc(x.text)}</td>
-      <td>${x.verified ? '<span class="v-tag v-ok">已核验</span>' : '<span class="v-tag v-warn">待核验</span>'}</td></tr>`).join('');
+  allArts = await api('/api/db/articles');
+  $('#art-count').textContent = allArts.length + ' 条';
+  $('#art-src').innerHTML = '<option value="">全部法规</option>' +
+    [...new Set(allArts.map(x => x.source))].map(s => `<option>${esc(s)}</option>`).join('');
+  renderArticles();
 
   const params = await api('/api/db/params');
   $('#param-count').textContent = params.length + ' 项';
@@ -1314,9 +1418,22 @@ async function loadDb() {
     '<tr><th>名称</th><th>层级</th><th>区划码</th><th>上级</th></tr>' +
     regions.map(x => `<tr><td>${esc(x.name)}</td><td>${RLEVEL[x.level] || x.level}</td>
       <td class="num">${esc(x.code)}</td><td>${esc(x.parent || '—')}</td></tr>`).join('');
+  fillRegionSelects(regions);
 }
 
+/* —— 启动：加载数据，恢复页签与会话 —— */
 loadEntries(); loadDb();
+const _hashView = location.hash.slice(1);
+if (_hashView && _hashView !== 'chat') switchView(_hashView);
+try {
+  const saved = sessionStorage.getItem('lq.msgs');
+  if (saved && saved.includes('m-user')) {
+    sessionId = Number(sessionStorage.getItem('lq.sid')) || null;
+    $('#msgs').innerHTML = saved;
+    const aside = sessionStorage.getItem('lq.aside');
+    if (aside) $('#aside-body').innerHTML = aside;
+  }
+} catch (e) { /* sessionStorage 不可用则跳过恢复 */ }
 </script>
 </body>
 </html>
