@@ -7,7 +7,7 @@
 
 ```
 README.md           入口 + 当前状态        ← 功能/数据有变化就同步「当前状态」表
-AGENTS.md           本文件：约定与纪律     ← 约定变更时改
+AGENTS.md           本文件：约定与纪律（CLAUDE.md 的自动镜像）
 docs/PRD.md         产品需求（稳定）
 docs/PLAN.md        改进计划（稳定）
 docs/EXECUTION.md   任务卡 + 状态总览      ← 唯一进度真相源：开工看、收工打勾
