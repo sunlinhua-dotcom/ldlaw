@@ -44,6 +44,7 @@ src/
   llm.py                   DeepSeek 封装（chat_json，类型防御）
   build_knowledge.py       建库（含引用存在性校验，失败即建库失败）
   ingest_law.py            法规抓取 + 切条工具（产出 data/seed/laws/*.json）
+  websearch.py             博查联网搜索（仅运营/知识层用，问答管线不接入）
   zhnum.py                 中文数字归一化
   qa_demo.py               命令行问答演示
 tests/                     单元测试（python3 tests/test_calculators.py）

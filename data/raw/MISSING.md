@@ -5,8 +5,11 @@
 
 ## 抓取失败（有官方源但未抓到）
 
-- **上海市企业工资支付办法**（shanghai-wage-payment）：官方页 404，需另寻权威镜像或人工贴文本
-  原尝试：https://rsj.sh.gov.cn/tgzzlgl_17309/20200617/t0035_1390573.html
+- **上海市企业工资支付办法**（shanghai-wage-payment）：原官方页 404
+  - 联网搜索（websearch.py，2026-06-13）已找到官方线索：沪人社综发〔2016〕29 号，
+    经沪人社规〔2021〕8 号**延长有效期**（上海人社局官网答复，2025-07）：
+    https://rsj.sh.gov.cn/tfkcx_17604/20250709/t0035_1433986.html
+  - 下一步：按文号检索全文页 → `data/raw/shanghai-wage-payment.txt` → `--offline` 切条入库（T1.3）
 
 ## 计划内尚未尝试入库（T1.2 / T1.3 范围）
 
