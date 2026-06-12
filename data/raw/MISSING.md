@@ -1,8 +1,20 @@
-# 抓取失败清单（人工提供 data/raw/<slug>.txt 后 --offline 重跑）
+# 法规缺口清单（2026-06-13 与 knowledge.db 比对刷新）
 
-- **工伤保险条例**（work-injury-regulation）：切条数 0 < 下限 60，疑似页面结构未识别
-  来源：https://policy.mofcom.gov.cn/claw/clawContent.shtml?id=2030
-- **上海市企业工资支付办法**（shanghai-wage-payment）：抓取失败：HTTP Error 404: Not Found
-  来源：https://rsj.sh.gov.cn/tgzzlgl_17309/20200617/t0035_1390573.html
-- **江苏省工资支付条例**（jiangsu-wage-payment）：抓取失败：HTTP Error 404: Not Found
-  来源：https://www.jsrd.gov.cn/qwfb/sjfg/202110/t20211008_532348.shtml
+> 本文件由 `src/ingest_law.py` 在抓取失败时自动覆写；人工提供
+> `data/raw/<slug>.txt` 后用 `--offline` 重跑即可入库。
+
+## 抓取失败（有官方源但未抓到）
+
+- **上海市企业工资支付办法**（shanghai-wage-payment）：官方页 404，需另寻权威镜像或人工贴文本
+  原尝试：https://rsj.sh.gov.cn/tgzzlgl_17309/20200617/t0035_1390573.html
+
+## 计划内尚未尝试入库（T1.2 / T1.3 范围）
+
+- **中华人民共和国工会法**（涉解除程序条款，T1.2 清单内）
+- **最高人民法院关于审理劳动争议案件适用法律问题的解释（二）**（2025-09-01 施行，口径变化大，T1.2 点名必须入库）
+- **沪苏两地高院 / 人社审理口径纪要**（T1.3 范围，来源需逐件确认）
+
+## 已解决（从旧清单移除）
+
+- 工伤保险条例 ✅ 已入库（offline 切条）
+- 江苏省工资支付条例 ✅ 已入库（offline 切条）

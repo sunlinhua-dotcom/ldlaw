@@ -69,9 +69,11 @@ class TestAnnualLeave(unittest.TestCase):
         self.assertEqual(exit_prorated_unused_days(30, 5, 3), 0)
 
     def test_payout(self):
+        # T0.6 口径：amount = 企业额外应补 200%；300% 法定总额并列在 steps 中
         r = annual_leave_payout(monthly_wage=8700, unused_days=2)
         daily = 8700 / 21.75  # = 400
-        self.assertAlmostEqual(r.amount, daily * 3 * 2, places=2)
+        self.assertAlmostEqual(r.amount, daily * 2 * 2, places=2)
+        self.assertTrue(any("300%" in s for s in r.steps), "300% 总额应在计算过程中并列展示")
 
 
 if __name__ == "__main__":

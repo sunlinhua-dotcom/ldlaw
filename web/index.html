@@ -134,6 +134,8 @@ button { font-family: inherit; cursor: pointer; }
   font-size: 13px; padding: 8px 15px; border-radius: 999px;
   border: 1px solid var(--line); background: var(--card); color: var(--ink-2);
   transition: all .16s; box-shadow: 0 1px 2px rgba(60,48,30,.04);
+  /* keep-all 下长句 min-content 会超出窄屏：必须允许 flex 收缩，否则撑出横向滚动 */
+  max-width: 100%; min-width: 0; text-align: left;
 }
 .chip:hover { border-color: var(--seal); color: var(--seal-deep); background: var(--seal-pale); transform: translateY(-1px); }
 
