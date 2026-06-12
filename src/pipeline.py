@@ -37,6 +37,7 @@ REGIONS = ["上海", "江苏", "浙江", "北京", "天津", "河北", "广东",
            "广州", "深圳", "南京", "无锡", "常州", "苏州", "杭州", "宁波"]
 
 _LOG_FAILURES = 0  # 日志落库失败计数（T0.5）
+LOG_ENABLED = True  # 评测跑分（run_eval.py）置 False，避免评测流量污染 app.db
 
 
 def kconn() -> sqlite3.Connection:
@@ -1062,6 +1063,8 @@ def _answer(kc, question: str, default_region: str | None,
 
 def _log(session_id: int | None, question: str, facts: dict, res: dict) -> None:
     global _LOG_FAILURES
+    if not LOG_ENABLED:
+        return
     try:
         ac = aconn()
         sid = session_id

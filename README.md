@@ -45,10 +45,12 @@ src/
   build_knowledge.py       建库（含引用存在性校验，失败即建库失败）
   ingest_law.py            法规抓取 + 切条工具（产出 data/seed/laws/*.json）
   verify_articles.py       法条核验流水线（seed vs 官方快照逐字 diff → G1 置 verified）
+  run_eval.py              评测跑分器（四硬指标，编造引用>0 即非 0 退出）
   websearch.py             博查联网搜索（仅运营/知识层用，问答管线不接入）
   zhnum.py                 中文数字归一化
   qa_demo.py               命令行问答演示
 tests/                     单元测试（python3 tests/run_all.py，30 用例）
+data/eval/eval_v1.jsonl    起步评测集 18 题（机器金标准）
 data/
   raw/                     法规原文 txt + MISSING.md（待补抓清单）
   seed/                    种子数据（laws/*.json、词条、地区参数）——唯一数据入口
