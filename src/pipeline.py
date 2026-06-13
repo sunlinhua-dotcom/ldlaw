@@ -965,11 +965,13 @@ def _answer(kc, question: str, default_region: str | None,
     if intent in ("severance", "unlawful_damages"):
         need = []
         if not region:
-            need.append("用工所在城市（各地社平封顶口径不同）")
+            need.append({"field": "region", "type": "region", "label": "用工所在城市",
+                         "hint": "各地社平封顶口径不同"})
         if not facts.get("monthly_wage"):
-            need.append("离职前 12 个月平均应发月工资")
+            need.append({"field": "monthly_wage", "type": "number",
+                         "label": "离职前 12 个月平均应发月工资", "hint": "元"})
         if not _parse_date(facts.get("hire_date")):
-            need.append("入职年月")
+            need.append({"field": "hire_date", "type": "date", "label": "入职日期"})
         if need:
             res.update(route="clarify", clarify=need,
                        conclusion="为了算得准，请先补充以下要素：")
@@ -1006,9 +1008,10 @@ def _answer(kc, question: str, default_region: str | None,
     if intent == "annual_leave":
         need = []
         if not facts.get("monthly_wage"):
-            need.append("月工资")
+            need.append({"field": "monthly_wage", "type": "number", "label": "月工资", "hint": "元"})
         if facts.get("cumulative_years") is None:
-            need.append("累计工龄（含此前单位年限）")
+            need.append({"field": "cumulative_years", "type": "number",
+                         "label": "累计工龄", "hint": "年，含此前单位年限"})
         if need:
             res.update(route="clarify", clarify=need,
                        conclusion="为了算得准，请先补充以下要素：")

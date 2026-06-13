@@ -124,6 +124,8 @@ button { font-family: inherit; cursor: pointer; }
 
 /* ============ 问答 ============ */
 .chat-grid { display: grid; grid-template-columns: minmax(0,1fr) 332px; gap: 26px; align-items: start; }
+/* 网格/弹性子项默认 min-width:auto 不收缩，长内容会撑破 1fr 轨道 → 显式置 0 */
+.chat-main { min-width: 0; }
 .chips-label {
   font-size: 11px; letter-spacing: 3px; color: var(--ink-3); margin: 2px 0 8px;
   display: flex; align-items: center; gap: 8px;
@@ -141,11 +143,13 @@ button { font-family: inherit; cursor: pointer; }
 
 #msgs { display: flex; flex-direction: column; gap: 18px; min-height: 180px; }
 .m-user {
-  align-self: flex-end; max-width: 78%;
+  align-self: flex-end; max-width: 78%; min-width: 0;
   background: var(--ink); color: #f3eee2;
   padding: 11px 16px; border-radius: 16px 16px 4px 16px;
   font-size: 14.5px; box-shadow: var(--shadow);
   animation: msgIn .3s cubic-bezier(.2,.7,.3,1) both;
+  /* 用户原文可能是长无标点串：keep-all 下需允许强制断行，否则撑出横向滚动 */
+  word-break: break-word; overflow-wrap: anywhere;
 }
 .m-bot { align-self: stretch; animation: msgIn .35s cubic-bezier(.2,.7,.3,1) both; }
 @keyframes msgIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
@@ -252,6 +256,24 @@ button { font-family: inherit; cursor: pointer; }
   background: var(--seal-pale); color: var(--seal-deep);
   font-size: 11px; font-weight: 700;
 }
+/* 结构化要素补全（T2.4）：点选/快填，不用重新打字 */
+.clar-form { display: grid; gap: 11px; margin-top: 4px; }
+.clar-field { display: grid; gap: 5px; }
+.clar-field label { font-size: 13px; color: var(--ink-2); }
+.clar-field .hint { color: var(--ink-3); font-size: 12px; }
+.clar-field input, .clar-field select {
+  font-size: 16px; padding: 9px 12px; border-radius: 9px;
+  border: 1.5px solid var(--line); background: var(--paper); font-family: inherit;
+  width: 100%; max-width: 320px; transition: border-color .15s, box-shadow .15s;
+}
+.clar-field input:focus, .clar-field select:focus {
+  outline: none; border-color: var(--seal); box-shadow: 0 0 0 3px var(--seal-pale); background: var(--card); }
+.clar-go {
+  justify-self: start; margin-top: 4px; font-size: 14px; padding: 9px 22px;
+  border-radius: 9px; border: none; background: var(--seal); color: #fff8f0;
+  font-weight: 600; letter-spacing: 1px; transition: background .15s; }
+.clar-go:hover { background: var(--seal-deep); }
+.clar-go:disabled { opacity: .5; cursor: not-allowed; }
 ol.howto { padding-left: 0; list-style: none; display: grid; gap: 6px; font-size: 14px; color: var(--ink-2); counter-reset: ht; }
 ol.howto li { display: flex; gap: 10px; counter-increment: ht; }
 ol.howto li::before {
@@ -965,8 +987,13 @@ function answerHtml(a, q) {
     <span class="badge b-gray">${a.llm_used ? 'DeepSeek 管线' : '规则引擎'}</span>`;
   if (a.region) h += `<span class="badge b-gray">${esc(a.region)}</span>`;
   h += `</div><div class="concl pretty">${esc(a.conclusion)}</div>`;
-  if (a.clarify && a.clarify.length)
-    h += `<div class="blk"><ul class="clar">${a.clarify.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>`;
+  if (a.clarify && a.clarify.length) {
+    const structured = typeof a.clarify[0] === 'object';
+    if (structured)
+      h += `<div class="blk">${clarifyFormHtml(a.clarify)}</div>`;
+    else
+      h += `<div class="blk"><ul class="clar">${a.clarify.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>`;
+  }
   if (a.amount != null)
     h += `<div class="blk stamp-wrap"><div class="stamp">
       <span class="stamp-label">测算金额</span>
@@ -997,6 +1024,50 @@ function answerHtml(a, q) {
 
 let sessionId = null;
 const ASK_STAGES = ['解析问题要素', '检索库内法条', '生成回答', '核验引用与数字'];
+
+/* —— clarify 结构化补全（T2.4）：点选/快填，复用同 session 要素合并 —— */
+function clarifyFormHtml(items) {
+  const regionOpts = [...$('#region').options].map(o =>
+    `<option value="${esc(o.value)}">${esc(o.textContent)}</option>`).join('');
+  const fields = items.map(it => {
+    let input;
+    if (it.type === 'region')
+      input = `<select data-cf="region" data-type="region"><option value="">请选择</option>${regionOpts}</select>`;
+    else if (it.type === 'date')
+      input = `<input type="date" data-cf="${esc(it.field)}" data-type="date">`;
+    else if (it.type === 'number')
+      input = `<input type="number" inputmode="decimal" min="0" data-cf="${esc(it.field)}" data-type="number" placeholder="${esc(it.hint || '')}">`;
+    else
+      input = `<input type="text" data-cf="${esc(it.field)}" data-type="text" placeholder="${esc(it.hint || '')}">`;
+    const hint = it.hint && it.type !== 'number' ? ` <span class="hint">（${esc(it.hint)}）</span>` : '';
+    return `<div class="clar-field"><label>${esc(it.label)}${hint}</label>${input}</div>`;
+  }).join('');
+  return `<div class="clar-form">${fields}
+    <button class="clar-go" onclick="submitClarify(this)">补全并继续 →</button></div>`;
+}
+// 把补全值拼成 regex 可解析的跟进句，走同 session 合并
+function submitClarify(btn) {
+  const form = btn.closest('.clar-form');
+  const parts = [];
+  let filled = 0;
+  form.querySelectorAll('[data-cf]').forEach(el => {
+    const v = el.value.trim();
+    if (!v) return;
+    filled++;
+    const t = el.dataset.type, f = el.dataset.cf;
+    if (t === 'region') parts.push(v);
+    else if (f === 'monthly_wage') parts.push(`月薪${v}元`);
+    else if (f === 'cumulative_years') parts.push(`工龄${v}年`);
+    else if (f === 'taken_days') parts.push(`今年已休${v}天`);
+    else if (t === 'date') {
+      const m = v.match(/(\d{4})-(\d{2})-(\d{2})/);
+      if (m) parts.push(`${m[1]}年${+m[2]}月${+m[3]}日${f === 'hire_date' ? '入职' : ''}`);
+    } else parts.push(v);
+  });
+  if (!filled) { btn.textContent = '请至少填一项'; setTimeout(() => btn.textContent = '补全并继续 →', 1600); return; }
+  btn.disabled = true;
+  ask(parts.join('，'));
+}
 /* 会话持久化：刷新不丢对话（仅当前标签页，sessionStorage） */
 function saveChat() {
   try {
