@@ -6,3 +6,4 @@ __pycache__/
 data/verify_report.md
 data/raw/*.fetch.txt
 data/eval/report_*.md
+data/review/*.md

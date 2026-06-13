@@ -427,17 +427,24 @@ def entry_by_slug(kc: sqlite3.Connection, slug: str) -> dict | None:
 
 
 def match_entry(kc: sqlite3.Connection, question: str) -> str | None:
-    if re.search(r"N\s*\+\s*1", question, re.I):
-        return "consensual-termination-n-plus-one"
+    """标题 + body.keywords 匹配（T1.7：去硬编码 slug 特判）。
+
+    精度闸：只有命中至少一个整词关键词的词条才可路由 entry_hit——否则超纲问题
+    （如『报销宠物医疗费』）会因二元组零散重叠被误命中。命中多个时按整词命中数 +
+    二元组重叠打分取最高，落选者交给 RAG/拒答路径。"""
     best, best_score = None, 0
     grams = set(_bigrams(question))
+    ql = question.lower()
     for slug, title, body in kc.execute(
             "SELECT slug, title, body FROM entry WHERE status != 'archived'"):
-        kw = title + "".join(json.loads(body).get("keywords", []))
-        score = sum(1 for g in grams if g in kw)
+        kws = json.loads(body).get("keywords", [])
+        kw_hits = sum(1 for k in kws if k and k.lower() in ql)
+        if kw_hits == 0:
+            continue  # 无整词命中 → 不进 entry_hit
+        score = kw_hits * 3 + sum(1 for g in grams if g in title + "".join(kws))
         if score > best_score:
             best, best_score = slug, score
-    return best if best_score >= 3 else None
+    return best
 
 
 # ============ 会话（多轮要素累积 T2.4）============
