@@ -509,6 +509,7 @@ ol.howto li::before {
   background: var(--card); border: 1px solid var(--line); border-radius: 14px;
   padding: 20px 22px; box-shadow: var(--shadow);
   display: flex; gap: 18px; transition: transform .18s, box-shadow .18s;
+  min-width: 0;  /* grid 项默认 min-width:auto，长机关名会撑破窄屏轨道 → 置 0 允许收缩 */
 }
 .case-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
 .case-seal {
@@ -523,9 +524,14 @@ ol.howto li::before {
 .case-body { flex: 1; min-width: 0; }
 .case-title { font-family: var(--serif); font-size: 16.5px; font-weight: 700; max-width: 42ch; }
 .case-meta { font-size: 12.5px; color: var(--ink-3); display: flex; gap: 12px; flex-wrap: wrap; margin-top: 5px; }
+/* 长机关名（keep-all 下成不可断长词）会撑破窄屏 flex 项：允许收缩并按需断行 */
+.case-meta > span { min-width: 0; overflow-wrap: anywhere; }
 .case-gist { font-size: 14px; color: var(--ink-2); max-width: 56ch; margin-top: 9px; line-height: 1.75; }
 .case-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 11px; }
 .tagchip { font-size: 11.5px; padding: 2px 9px; border-radius: 4px; background: var(--paper-2); color: var(--ink-2); }
+.case-src { font-size: 12px; color: var(--ink-3); margin-top: 10px; }
+.case-src a { color: var(--ink-2); text-decoration: none; border-bottom: 1px solid var(--line); }
+.case-src a:hover { color: var(--seal-deep); border-color: var(--seal); }
 
 /* ============ 词条 ============ */
 .list { display: grid; gap: 12px; }
@@ -1609,11 +1615,16 @@ async function loadCases() {
     cards.innerHTML = cases.map(c => {
       const o = OUTCOME[c.result] || {zh: '案', label: '—', cls: 'cs-er'};
       const tags = (c.tags || []).map(t => `<span class="tagchip">${esc(t)}</span>`).join('');
+      // 来源：license_note 后段形如「来源：人社部 · https://…」；做成可回官方源核对的链接
+      const srcNote = c.source_note || '';
+      const srcUrl = (srcNote.match(/https?:\/\/\S+/) || [''])[0];
+      const srcLabel = srcNote.replace(/\s*·?\s*https?:\/\/\S+/, '').trim() || '官方公开发布';
       return `<div class="case-card">
         <div class="case-seal ${o.cls}">${o.zh}</div>
         <div class="case-body">
           <div class="case-title balance">${esc(c.title || c.gist || '案例')}</div>
           <div class="case-meta">
+            ${c.verified ? '' : '<span class="v-tag v-warn">待核验</span>'}
             <span>${o.label}</span>
             ${c.court ? `<span>${esc(c.court)}</span>` : ''}
             ${c.region ? `<span>${esc(c.region)}</span>` : ''}
@@ -1621,6 +1632,9 @@ async function loadCases() {
           </div>
           ${c.gist && c.gist !== c.title ? `<div class="case-gist pretty">${esc(c.gist)}</div>` : ''}
           ${tags ? `<div class="case-tags">${tags}</div>` : ''}
+          ${srcNote ? `<div class="case-src">${srcUrl
+            ? `<a href="${esc(srcUrl)}" target="_blank" rel="noopener noreferrer">${esc(srcLabel)} ↗</a>`
+            : esc(srcLabel)}</div>` : ''}
         </div>
       </div>`;
     }).join('');
