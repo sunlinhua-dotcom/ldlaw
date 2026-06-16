@@ -569,6 +569,93 @@ tr:last-child td { border-bottom: none; }
 tbody tr:hover td, tr:hover td { background: color-mix(in srgb, var(--paper-2) 40%, transparent); }
 .art-text { color: var(--ink-2); max-width: 50ch; }
 
+/* ============ 六道防线（可信架构图） ============ */
+.defense-head {
+  display: flex; align-items: center; gap: 13px; margin: 30px 0 6px;
+}
+.defense-head .crest {
+  flex-shrink: 0; width: 40px; height: 40px; color: var(--seal);
+  filter: drop-shadow(0 2px 5px rgba(189,58,44,.22));
+}
+.defense-head .dh-t {
+  font-family: var(--serif); font-size: 18px; font-weight: 700; letter-spacing: 2px;
+}
+.defense-head .dh-s { font-size: 12.5px; color: var(--ink-3); margin-top: 1px; }
+.defense-intro {
+  font-size: 13.5px; color: var(--ink-2); max-width: 52ch;
+  margin: 10px 0 20px; line-height: 1.8;
+}
+.defense-intro b { color: var(--seal-deep); font-weight: 700; }
+/* 防线流程：朱砂序号印 + 闸门卡 + 描线脊柱 */
+.gates { position: relative; list-style: none; display: grid; gap: 11px; }
+.gates::before {  /* 脊柱：朱砂渐隐到秋香，承载流动光点 */
+  content: ""; position: absolute; z-index: 0;
+  left: 19px; top: 24px; bottom: 24px; width: 2px;
+  background: linear-gradient(var(--seal), var(--gold) 55%, var(--line));
+  opacity: .45; border-radius: 2px;
+}
+.gates .flow-dot {
+  position: absolute; left: 16px; width: 8px; height: 8px; border-radius: 50%;
+  background: var(--seal); box-shadow: 0 0 9px 2px rgba(189,58,44,.55);
+  z-index: 1; animation: flow 3.4s cubic-bezier(.55,.1,.45,.9) infinite;
+}
+@keyframes flow {
+  0% { top: 18px; opacity: 0; }
+  12% { opacity: 1; }
+  88% { opacity: 1; }
+  100% { top: calc(100% - 22px); opacity: 0; }
+}
+.gate {
+  position: relative; z-index: 2;
+  display: flex; align-items: flex-start; gap: 14px;
+  background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+  padding: 13px 16px; box-shadow: var(--shadow);
+  transition: transform .18s, box-shadow .18s, border-color .18s;
+  animation: gateIn .5s cubic-bezier(.2,.7,.3,1) both;
+}
+.gate:hover { transform: translateX(2px); border-color: var(--seal-pale); box-shadow: var(--shadow-lg); }
+.gate:nth-child(1) { animation-delay: .04s; } .gate:nth-child(2) { animation-delay: .12s; }
+.gate:nth-child(3) { animation-delay: .20s; } .gate:nth-child(4) { animation-delay: .28s; }
+.gate:nth-child(5) { animation-delay: .36s; } .gate:nth-child(6) { animation-delay: .44s; }
+@keyframes gateIn { from { opacity: 0; transform: translateY(9px); } to { opacity: 1; transform: none; } }
+.gate-no {
+  flex-shrink: 0; width: 40px; height: 40px;
+  display: grid; place-items: center;
+  font-family: var(--serif); font-size: 18px; font-weight: 800;
+  color: #f7f3ea; background: var(--seal); border-radius: 9px;
+  transform: rotate(-2deg);
+  box-shadow: inset 0 0 0 1.5px rgba(247,243,234,.5), 0 2px 8px rgba(189,58,44,.28);
+}
+.gate-body { flex: 1; min-width: 0; }
+.gate-name {
+  font-family: var(--serif); font-size: 15.5px; font-weight: 700; letter-spacing: 1px;
+  display: flex; align-items: center; gap: 8px;
+}
+.gate-name .g-ic { flex-shrink: 0; width: 19px; height: 19px; color: var(--seal); opacity: .9; }
+.gate-desc { font-size: 13px; color: var(--ink-2); margin-top: 3px; max-width: 48ch; line-height: 1.7; }
+.gate-desc code {
+  background: var(--paper-2); padding: 0 6px; border-radius: 5px;
+  font-size: 12px; white-space: nowrap; color: var(--ink-2);
+}
+.gate-outcome {
+  display: flex; gap: 12px; flex-wrap: wrap; margin-top: 14px;
+}
+.oc {
+  flex: 1; min-width: 220px;
+  display: flex; align-items: center; gap: 11px;
+  border: 1.5px solid; border-radius: 12px; padding: 12px 15px;
+  font-size: 13.5px; line-height: 1.5;
+}
+.oc-pass { border-color: var(--green); background: var(--green-bg); color: var(--green); }
+.oc-stop { border-color: var(--seal); background: var(--seal-pale); color: var(--seal-deep); }
+.oc-sign {
+  flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%;
+  display: grid; place-items: center; border: 2px solid currentColor;
+  font-size: 16px; font-weight: 800;
+}
+.oc b { font-family: var(--serif); }
+.oc small { display: block; font-size: 12px; opacity: .82; font-weight: 400; }
+
 /* ============ 空态 ============ */
 .empty-state {
   display: flex; flex-direction: column; align-items: center;
@@ -686,6 +773,50 @@ footer p { font-size: 12.5px; color: var(--ink-3); max-width: 56ch; }
     <line x1="34" y1="30" x2="60" y2="30" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
     <line x1="34" y1="42" x2="60" y2="42" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
     <line x1="34" y1="54" x2="50" y2="54" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+  </symbol>
+  <!-- 可信盾徽（六道防线小节徽标） -->
+  <symbol id="crest-trust" viewBox="0 0 64 64">
+    <path d="M32 5l21 7v15c0 15-9.5 26-21 31C20.5 53 11 42 11 27V12z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/>
+    <path d="M22 31l7 7 14-15" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+  <!-- 防线 1 · 路由决策（分流） -->
+  <symbol id="g-route" viewBox="0 0 24 24">
+    <circle cx="4.6" cy="12" r="2.1" fill="none" stroke="currentColor" stroke-width="1.7"/>
+    <path d="M6.7 12H12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+    <path d="M12 12c0-4 1.4-5 5-5M12 12h5M12 12c0 4 1.4 5 5 5" fill="none" stroke="currentColor" stroke-width="1.5"/>
+    <circle cx="19.4" cy="7" r="1.5" fill="none" stroke="currentColor" stroke-width="1.5"/>
+    <circle cx="19.4" cy="12" r="1.5" fill="none" stroke="currentColor" stroke-width="1.5"/>
+    <circle cx="19.4" cy="17" r="1.5" fill="none" stroke="currentColor" stroke-width="1.5"/>
+  </symbol>
+  <!-- 防线 2 · 金额计算（代码算钱） -->
+  <symbol id="g-coin" viewBox="0 0 24 24">
+    <circle cx="12" cy="12" r="6" fill="none" stroke="currentColor" stroke-width="1.7"/>
+    <path d="M9.6 9.2 12 12.2l2.4-3M12 12.2V16M10 13.4h4M10 14.9h4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M4.4 8.4 2.6 12l1.8 3.6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M19.6 8.4 21.4 12l-1.8 3.6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+  <!-- 防线 3 · 引用校验（条文核对） -->
+  <symbol id="g-doc-check" viewBox="0 0 24 24">
+    <path d="M6 3h7l5 5v13H6z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+    <path d="M13 3v5h5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+    <path d="M8.4 14.4l2 2 4-4.2" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+  <!-- 防线 4 · 数字溯源（追溯） -->
+  <symbol id="g-trace" viewBox="0 0 24 24">
+    <circle cx="10" cy="10" r="6" fill="none" stroke="currentColor" stroke-width="1.7"/>
+    <path d="M14.4 14.4 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+    <path d="M7.6 8.2 6.8 12M10.4 8.2 9.6 12M6.7 9.4h4M6.4 10.8h4" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+  </symbol>
+  <!-- 防线 5 · 案号校验（卷宗标签） -->
+  <symbol id="g-tag" viewBox="0 0 24 24">
+    <path d="M4 11.4V5a1 1 0 0 1 1-1h6.4L20 12.6 12.6 20z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+    <circle cx="8" cy="8" r="1.4" fill="currentColor"/>
+    <path d="M11.6 11.5l3.4 3.4M10.4 13.2l3.4 3.4" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+  </symbol>
+  <!-- 防线 6 · 拒答闸门（盾·止） -->
+  <symbol id="g-shield" viewBox="0 0 24 24">
+    <path d="M12 3l7 2.4v5.1c0 5-3.2 8.6-7 10.1-3.8-1.5-7-5.1-7-10.1V5.4z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+    <path d="M9 11.6h6" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
   </symbol>
 </svg>
 
@@ -862,6 +993,75 @@ footer p { font-size: 12.5px; color: var(--ink-3); max-width: 56ch; }
         <strong>双库架构</strong>　<code>knowledge.db</code>（法规 / 词条 / 参数，只读，整库替换发布）＋
         <code>app.db</code>（问答日志 / 转介工单，WAL 读写）。本页数据实时读自 knowledge.db。
       </div>
+
+      <!-- 六道防线 · 可信架构图 -->
+      <div class="defense-head">
+        <svg class="crest" viewBox="0 0 64 64" fill="none" aria-hidden="true"><use href="#crest-trust"/></svg>
+        <div>
+          <div class="dh-t">可信架构 · 六道防线</div>
+          <div class="dh-s">路由 / 算钱 / 引用 / 数字 / 案号 / 拒答，全部在代码层把关</div>
+        </div>
+      </div>
+      <p class="defense-intro pretty">LLM 只做两件事：<b>抽取要素</b>与<b>依据检索到的条文生成</b>。
+      是否动钱、引用真不真、数字从哪来、能不能答——全由确定性代码裁决。
+      一个回答要穿过下面六道防线，<b>任一不过即拒答、转人工律师</b>。</p>
+      <ol class="gates">
+        <li class="gate">
+          <div class="gate-no">一</div>
+          <div class="gate-body">
+            <div class="gate-name">路由决策<svg class="g-ic" viewBox="0 0 24 24" fill="none"><use href="#g-route"/></svg></div>
+            <div class="gate-desc pretty">先判该走哪条路——算钱、命中律师审核词条、检索生成，还是直接拒答。</div>
+          </div>
+        </li>
+        <li class="gate">
+          <div class="gate-no">二</div>
+          <div class="gate-body">
+            <div class="gate-name">金额计算<svg class="g-ic" viewBox="0 0 24 24" fill="none"><use href="#g-coin"/></svg></div>
+            <div class="gate-desc pretty">涉钱永远走确定性代码 <code>calculators.py</code>，模型不碰一个数字。</div>
+          </div>
+        </li>
+        <li class="gate">
+          <div class="gate-no">三</div>
+          <div class="gate-body">
+            <div class="gate-name">引用校验<svg class="g-ic" viewBox="0 0 24 24" fill="none"><use href="#g-doc-check"/></svg></div>
+            <div class="gate-desc pretty">所引法条必须真实存在，且落在本次检索到的条文范围内，越界即拦。</div>
+          </div>
+        </li>
+        <li class="gate">
+          <div class="gate-no">四</div>
+          <div class="gate-body">
+            <div class="gate-name">数字溯源<svg class="g-ic" viewBox="0 0 24 24" fill="none"><use href="#g-trace"/></svg></div>
+            <div class="gate-desc pretty">回答里每个数字，都要能追回条文、案例或你提供的事实，追不到即拦。</div>
+          </div>
+        </li>
+        <li class="gate">
+          <div class="gate-no">五</div>
+          <div class="gate-body">
+            <div class="gate-name">案号校验<svg class="g-ic" viewBox="0 0 24 24" fill="none"><use href="#g-tag"/></svg></div>
+            <div class="gate-desc pretty">答案中出现的案号，必须在库内案例里可查，杜绝编造判例。</div>
+          </div>
+        </li>
+        <li class="gate">
+          <div class="gate-no">六</div>
+          <div class="gate-body">
+            <div class="gate-name">拒答闸门<svg class="g-ic" viewBox="0 0 24 24" fill="none"><use href="#g-shield"/></svg></div>
+            <div class="gate-desc pretty">检索置信度不足、或算不准时，宁可拒答并转人工律师，不硬猜。</div>
+          </div>
+        </li>
+        <div class="flow-dot" aria-hidden="true"></div>
+      </ol>
+      <div class="gate-outcome">
+        <div class="oc oc-pass">
+          <span class="oc-sign">✓</span>
+          <span><b>六关全过 → 输出回答</b><small>结论、法条、金额逐项可核</small></span>
+        </div>
+        <div class="oc oc-stop">
+          <span class="oc-sign">✕</span>
+          <span><b>任一不过 → 转人工律师</b><small>不编造、不硬猜，留痕转介</small></span>
+        </div>
+      </div>
+
+      <h3 class="sec-title">库存概览</h3>
       <div class="stats" id="db-stats"></div>
       <h3 class="sec-title">法规库 <span class="count-tag" id="src-count"></span></h3>
       <div class="tbl-wrap"><table id="tbl-sources"></table></div>
