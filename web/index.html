@@ -232,6 +232,8 @@ button { font-family: inherit; cursor: pointer; }
   margin: 0; padding: 2px 16px 13px 14px;
   font-size: 13.5px; color: var(--ink-2); max-width: 56ch; line-height: 1.8;
 }
+/* 引用来源层级图标：一眼可辨法律 / 行政法规 / 司法解释 / 地方 / 文件 */
+.cite-lv { flex-shrink: 0; width: 15px; height: 15px; align-self: center; opacity: .92; }
 .v-tag { font-size: 11px; padding: 0 7px; border-radius: 3px; white-space: nowrap; }
 .v-ok   { background: var(--green-bg); color: var(--green); }
 .v-warn { background: var(--gold-bg); color: var(--gold); }
@@ -553,7 +555,8 @@ ol.howto li::before {
   background: var(--card); border: 1px solid var(--line); border-radius: 12px;
   padding: 14px 16px; box-shadow: var(--shadow);
 }
-.stat .v { font-family: var(--serif); font-size: 27px; font-weight: 800; line-height: 1.2; }
+.stat .v { font-family: var(--serif); font-size: 27px; font-weight: 800; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.stat .v.hot { color: var(--seal); }   /* 待核验数朱砂高亮：数据透明，不藏 */
 .stat .l { font-size: 12px; color: var(--ink-3); margin-top: 2px; letter-spacing: .5px; }
 .sec-title {
   font-family: var(--serif); font-size: 18px; letter-spacing: 2px;
@@ -817,6 +820,30 @@ footer p { font-size: 12.5px; color: var(--ink-3); max-width: 56ch; }
   <symbol id="g-shield" viewBox="0 0 24 24">
     <path d="M12 3l7 2.4v5.1c0 5-3.2 8.6-7 10.1-3.8-1.5-7-5.1-7-10.1V5.4z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
     <path d="M9 11.6h6" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+  </symbol>
+  <!-- 引用层级 · 法律（法典+星） -->
+  <symbol id="ci-law" viewBox="0 0 24 24">
+    <path d="M5 5.5A1.5 1.5 0 0 1 6.5 4H19v15.5H6.5A1.5 1.5 0 0 0 5 21z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+    <path d="M12 7l1.1 2.2 2.4.35-1.75 1.7.42 2.4L12 12.5l-2.17 1.15.42-2.4L8.5 9.55l2.4-.35z" fill="currentColor" stroke="none"/>
+  </symbol>
+  <!-- 引用层级 · 行政法规/部门规章（政府建筑） -->
+  <symbol id="ci-gov" viewBox="0 0 24 24">
+    <path d="M3.5 9 12 4.5 20.5 9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+    <path d="M5 9.6h14" fill="none" stroke="currentColor" stroke-width="1.3"/>
+    <path d="M6 10.2v7M10 10.2v7M14 10.2v7M18 10.2v7" fill="none" stroke="currentColor" stroke-width="1.5"/>
+    <path d="M3.8 18.6h16.4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+  </symbol>
+  <!-- 引用层级 · 司法解释（法槌） -->
+  <symbol id="ci-gavel" viewBox="0 0 24 24">
+    <rect x="11.4" y="2.8" width="6" height="9" rx="1.5" transform="rotate(45 14.4 7.3)" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+    <line x1="12.2" y1="11" x2="19.4" y2="18.2" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+    <line x1="4" y1="20.6" x2="11" y2="20.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+  </symbol>
+  <!-- 引用层级 · 规范性文件（文书） -->
+  <symbol id="ci-doc" viewBox="0 0 24 24">
+    <path d="M6 3h8l4 4v14H6z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+    <path d="M14 3v4h4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+    <path d="M9 12.5h6M9 16h4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
   </symbol>
 </svg>
 
@@ -1150,13 +1177,29 @@ function rotateThinking(box, stages) {
 }
 
 /* —— 引用渲染 —— */
+// 来源→层级映射（loadDb 拉 /api/db/sources 时填充，唯一权威源；查不到则不显图标）
+let SRC_LEVEL = {};
+const CITE_LV = {
+  law:             ['#ci-law',   '法律',       'var(--seal)'],
+  admin_reg:       ['#ci-gov',   '行政法规',   'var(--gold)'],
+  judicial_interp: ['#ci-gavel', '司法解释',   'var(--seal)'],
+  dept_rule:       ['#ci-gov',   '部门规章',   'var(--gold)'],
+  local_reg:       ['#i-pin',    '地方性法规', 'var(--green)'],
+  local_rule:      ['#i-pin',    '地方政府规章','var(--green)'],
+  normative_doc:   ['#ci-doc',   '规范性文件', 'var(--ink-3)'],
+};
+function citeLvIcon(source) {
+  const m = CITE_LV[SRC_LEVEL[source]];
+  if (!m) return '';
+  return `<svg class="cite-lv" viewBox="0 0 24 24" fill="none" style="color:${m[2]}" role="img" aria-label="${m[1]}"><title>${m[1]}</title><use href="${m[0]}"/></svg>`;
+}
 function citeHtml(c) {
   const clause = c.clause ? `第${esc(c.clause)}款` : '';
   const v = c.verified
     ? '<span class="v-tag v-ok">已核验</span>'
     : '<span class="v-tag v-warn">待核验</span>';
   return `<details class="cite">
-    <summary><span class="cite-src">《${esc(c.source)}》</span>
+    <summary>${citeLvIcon(c.source)}<span class="cite-src">《${esc(c.source)}》</span>
       <span class="cite-art">${esc(c.article)}${clause}</span>${v}<span class="tg">▸</span></summary>
     <blockquote class="pretty">${esc(c.text)}</blockquote>
   </details>`;
@@ -1648,18 +1691,45 @@ function fillRegionSelects(regions) {
   });
 }
 
+/* 库存概览数字 count-up：入视触发，尊重 reduced-motion；千分位走 nf() */
+function countUp(el) {
+  const target = Number(el.dataset.target) || 0;
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) { el.textContent = nf(target); return; }
+  const dur = 850, t0 = performance.now();
+  (function tick(now) {
+    const p = Math.min(1, (now - t0) / dur);
+    el.textContent = nf(Math.round(target * (1 - Math.pow(1 - p, 3))));  // easeOutCubic
+    if (p < 1) requestAnimationFrame(tick); else el.textContent = nf(target);
+  })(performance.now());
+  setTimeout(() => { el.textContent = nf(target); }, dur + 300);  // rAF 被节流也保证落到正确值，绝不停在 0
+}
+let _statObserver = null;
+function revealStats() {
+  const els = [...document.querySelectorAll('#db-stats .v')];
+  if (!('IntersectionObserver' in window)) { els.forEach(el => el.textContent = nf(Number(el.dataset.target) || 0)); return; }
+  if (_statObserver) _statObserver.disconnect();
+  _statObserver = new IntersectionObserver((ens, obs) => ens.forEach(en => {
+    if (en.isIntersecting) { countUp(en.target); obs.unobserve(en.target); }
+  }), {threshold: .4});
+  els.forEach(el => _statObserver.observe(el));
+}
+
 async function loadDb() {
   const s = await api('/api/db/summary');
   if (s.llm) { $('#llm-text').textContent = s.llm; $('#llm-dot').classList.add('on'); }
   else { $('#llm-text').textContent = '规则引擎'; }
   $('#db-stats').innerHTML = [
     [s.sources, '法规（部）'], [s.articles, '法条（条）'],
-    [s.articles_unverified, '待核验法条'], [s.entries, '百科词条'],
+    [s.articles_unverified, '待核验法条', 'hot'], [s.entries, '百科词条'],
     [s.params, '地区参数'], [s.regions, '覆盖地区'],
     [s.qa_logged, '问答日志'], [s.referrals, '转介工单'],
-  ].map(([v, l]) => `<div class="stat"><div class="v num">${nf(v)}</div><div class="l">${l}</div></div>`).join('');
+  ].map(([v, l, cls]) =>
+    `<div class="stat"><div class="v num${cls ? ' ' + cls : ''}" data-target="${Number(v) || 0}">${nf(Number(v) || 0)}</div>
+      <div class="l">${l}</div></div>`).join('');
+  revealStats();  // 入视后数字滚动到位（count-up）；IO 不触发时已是正确值，不会留 0
 
   const srcs = await api('/api/db/sources');
+  SRC_LEVEL = {}; srcs.forEach(x => { SRC_LEVEL[x.title] = x.level; });  // 引用层级图标的权威来源
   $('#src-count').textContent = srcs.length + ' 部';
   $('#tbl-sources').innerHTML =
     '<tr><th>法规名称</th><th>层级</th><th>文号</th><th>地区</th><th>生效</th><th>条数</th><th>状态</th></tr>' +
