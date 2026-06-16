@@ -500,6 +500,8 @@ ol.howto li::before {
   font-family: inherit;
 }
 .filter-bar input { flex: 1; min-width: 150px; max-width: 320px; }
+/* 选择器按最长选项（如长法规名）撑宽会在窄屏溢出：允许收缩并截断显示 */
+.filter-bar select { min-width: 0; max-width: 100%; }
 .filter-bar select:focus, .filter-bar input:focus { outline: none; border-color: var(--seal); }
 .filter-hint { font-size: 12.5px; color: var(--ink-3); }
 .case-cards { display: grid; gap: 15px; }
@@ -701,7 +703,30 @@ footer p { font-size: 12.5px; color: var(--ink-3); max-width: 56ch; }
   .f-row { grid-template-columns: 1fr; gap: 0; }
   .case-card { padding: 16px; gap: 13px; }
   .case-seal { width: 44px; height: 44px; font-size: 16px; }
-  table { min-width: 520px; }
+  /* 法库数据表 → 移动端堆叠卡片：长文本（法条原文 / 法规名称 / 文号）全宽换行，不再左右拖 */
+  #v-db .tbl-wrap { overflow-x: visible; border: none; background: none; box-shadow: none; }
+  #v-db table { display: block; min-width: 0; width: 100%; }
+  #v-db table tbody { display: block; }
+  #v-db table tr { display: block; }
+  #v-db table tr:first-child { display: none; }            /* 隐藏表头行（仅含 th） */
+  #v-db table tr:not(:first-child) {                        /* 每条记录一张卡片 */
+    background: var(--card); border: 1px solid var(--line); border-radius: 11px;
+    box-shadow: var(--shadow); padding: 8px 14px; margin-bottom: 11px;
+  }
+  #v-db table td {
+    /* grid + minmax(0,1fr)：值轨可收缩到 0，长文本据此换行，绕开 flex min-content 撑破 */
+    display: grid; grid-template-columns: 4.8em minmax(0, 1fr); gap: 10px; align-items: baseline;
+    padding: 6px 0; border: none;
+    white-space: normal !important;                         /* 覆盖单元格内联 nowrap，长标题/原文换行 */
+    font-size: 13.5px; color: var(--ink);
+  }
+  #v-db table td + td { border-top: 1px solid var(--line-2); }
+  #v-db table td::before {
+    content: attr(data-label); color: var(--ink-3);
+    font-size: 12px; font-weight: 600; letter-spacing: .5px;
+  }
+  #v-db table td.num { white-space: nowrap !important; }    /* 条款号/日期/数值/区划码仍不折行 */
+  #v-db .art-text { max-width: none; }                      /* 原文用整张卡片宽度 */
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
@@ -1659,10 +1684,10 @@ function renderArticles() {
     (x.article_no || '').includes(q) || (x.text || '').includes(q) || (x.source || '').includes(q));
   $('#tbl-articles').innerHTML =
     '<tr><th>法规</th><th>条款</th><th>原文</th><th>核验</th></tr>' +
-    rows.slice(0, ART_PAGE).map(x => `<tr><td style="font-size:12px;white-space:nowrap">${esc(x.source)}</td>
-      <td class="num" style="white-space:nowrap">${esc(x.article_no)}${x.clause_no ? '第' + esc(x.clause_no) + '款' : ''}</td>
-      <td class="art-text pretty">${esc(x.text)}</td>
-      <td>${x.verified ? '<span class="v-tag v-ok">已核验</span>' : '<span class="v-tag v-warn">待核验</span>'}</td></tr>`).join('');
+    rows.slice(0, ART_PAGE).map(x => `<tr><td data-label="法规" style="font-size:12px;white-space:nowrap">${esc(x.source)}</td>
+      <td data-label="条款" class="num" style="white-space:nowrap">${esc(x.article_no)}${x.clause_no ? '第' + esc(x.clause_no) + '款' : ''}</td>
+      <td data-label="原文" class="art-text pretty">${esc(x.text)}</td>
+      <td data-label="核验">${x.verified ? '<span class="v-tag v-ok">已核验</span>' : '<span class="v-tag v-warn">待核验</span>'}</td></tr>`).join('');
   $('#art-hint').textContent = rows.length > ART_PAGE
     ? `命中 ${rows.length.toLocaleString('zh-CN')} 条，显示前 ${ART_PAGE} 条，可选法规或输入关键词缩小范围`
     : `命中 ${rows.length.toLocaleString('zh-CN')} 条`;
@@ -1733,11 +1758,11 @@ async function loadDb() {
   $('#src-count').textContent = srcs.length + ' 部';
   $('#tbl-sources').innerHTML =
     '<tr><th>法规名称</th><th>层级</th><th>文号</th><th>地区</th><th>生效</th><th>条数</th><th>状态</th></tr>' +
-    srcs.map(x => `<tr><td>${esc(x.title)}</td>
-      <td><span class="tagchip">${LEVEL_ZH[x.level] || x.level}</span></td>
-      <td style="font-size:12px">${esc(x.doc_no || '—')}</td><td>${esc(x.region)}</td>
-      <td class="num">${esc(x.effective_date || '—')}</td><td class="num">${x.articles}</td>
-      <td><span class="v-tag ${x.status === 'active' ? 'v-ok' : 'v-warn'}">${x.status === 'active' ? '现行有效' : x.status}</span></td></tr>`).join('');
+    srcs.map(x => `<tr><td data-label="法规名称">${esc(x.title)}</td>
+      <td data-label="层级"><span class="tagchip">${LEVEL_ZH[x.level] || x.level}</span></td>
+      <td data-label="文号" style="font-size:12px">${esc(x.doc_no || '—')}</td><td data-label="地区">${esc(x.region)}</td>
+      <td data-label="生效" class="num">${esc(x.effective_date || '—')}</td><td data-label="条数" class="num">${x.articles}</td>
+      <td data-label="状态"><span class="v-tag ${x.status === 'active' ? 'v-ok' : 'v-warn'}">${x.status === 'active' ? '现行有效' : x.status}</span></td></tr>`).join('');
 
   allArts = await api('/api/db/articles');
   $('#art-count').textContent = allArts.length + ' 条';
@@ -1749,16 +1774,16 @@ async function loadDb() {
   $('#param-count').textContent = params.length + ' 项';
   $('#tbl-params').innerHTML =
     '<tr><th>地区</th><th>参数</th><th>数值</th><th>期间</th><th>核验</th></tr>' +
-    params.map(x => `<tr><td>${esc(x.region)}</td><td>${esc(x.param_key)}</td>
-      <td class="num">${nf(x.value.amount)} ${esc(x.value.unit || '')}</td>
-      <td class="num">${esc(x.period)}</td>
-      <td>${x.verified ? '<span class="v-tag v-ok">已核</span>' : '<span class="v-tag v-warn">占位</span>'}</td></tr>`).join('');
+    params.map(x => `<tr><td data-label="地区">${esc(x.region)}</td><td data-label="参数">${esc(x.param_key)}</td>
+      <td data-label="数值" class="num">${nf(x.value.amount)} ${esc(x.value.unit || '')}</td>
+      <td data-label="期间" class="num">${esc(x.period)}</td>
+      <td data-label="核验">${x.verified ? '<span class="v-tag v-ok">已核</span>' : '<span class="v-tag v-warn">占位</span>'}</td></tr>`).join('');
 
   const regions = await api('/api/db/regions');
   $('#tbl-regions').innerHTML =
     '<tr><th>名称</th><th>层级</th><th>区划码</th><th>上级</th></tr>' +
-    regions.map(x => `<tr><td>${esc(x.name)}</td><td>${RLEVEL[x.level] || x.level}</td>
-      <td class="num">${esc(x.code)}</td><td>${esc(x.parent || '—')}</td></tr>`).join('');
+    regions.map(x => `<tr><td data-label="名称">${esc(x.name)}</td><td data-label="层级">${RLEVEL[x.level] || x.level}</td>
+      <td data-label="区划码" class="num">${esc(x.code)}</td><td data-label="上级">${esc(x.parent || '—')}</td></tr>`).join('');
   fillRegionSelects(regions);
 }
 
