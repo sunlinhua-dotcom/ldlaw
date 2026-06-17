@@ -130,7 +130,7 @@ export async function retrieve(db, question, regionName, k = 4) {
   }
   const ph = chain.map(() => '?').join(',');
   const { results } = await db.prepare(
-    `SELECT ls.title, la.article_no, la.clause_no, la.text, la.verified, r.name AS region
+    `SELECT ls.title, la.article_no, la.clause_no, la.text, la.verified, r.name AS region, ls.source_url
      FROM legal_article la JOIN legal_source ls ON ls.id=la.source_id
      JOIN region r ON r.id=ls.region_id
      WHERE ls.region_id IN (${ph}) AND la.status='active' ${whereIds}`
@@ -138,7 +138,7 @@ export async function retrieve(db, question, regionName, k = 4) {
   const gs = new Set(grams);
   return results
     .map(r => ({ source:r.title, article:r.article_no, clause:r.clause_no,
-                 text:r.text, verified:!!r.verified, region:r.region,
+                 text:r.text, verified:!!r.verified, region:r.region, source_url:r.source_url,
                  score:[...gs].filter(g => r.text.includes(g)).length }))
     .filter(r => r.score > 0)
     .sort((a,b) => b.score - a.score)
@@ -188,13 +188,13 @@ export async function resolveCitations(db, refs) {
     if (!m) { unresolved.push(r); continue; }
     const clause = normClause(m[3]);
     const row = await db.prepare(
-      `SELECT ls.title, la.article_no, la.clause_no, la.text, la.verified, r.name AS region
+      `SELECT ls.title, la.article_no, la.clause_no, la.text, la.verified, r.name AS region, ls.source_url
        FROM legal_article la JOIN legal_source ls ON ls.id=la.source_id
        JOIN region r ON r.id=ls.region_id
        WHERE ls.title=? AND la.article_no=? AND (? IS NULL OR la.clause_no=?)`
     ).bind(m[1], m[2], clause, clause).first();
     if (row) out.push({ source:row.title, article:row.article_no, clause:row.clause_no,
-                        text:row.text, verified:!!row.verified, region:row.region });
+                        text:row.text, verified:!!row.verified, region:row.region, source_url:row.source_url });
     else unresolved.push(r);
   }
   return [out, unresolved];
@@ -315,14 +315,14 @@ export async function entryBySlug(db, slug) {
   const e = await db.prepare("SELECT id, title, body, status, basis_date FROM entry WHERE slug=?").bind(slug).first();
   if (!e) return null;
   const { results: cites } = await db.prepare(
-    `SELECT ls.title, la.article_no, la.clause_no, la.text, la.verified, r.name
+    `SELECT ls.title, la.article_no, la.clause_no, la.text, la.verified, r.name, ls.source_url
      FROM entry_citation ec JOIN legal_article la ON la.id=ec.article_id
      JOIN legal_source ls ON ls.id=la.source_id JOIN region r ON r.id=ls.region_id
      WHERE ec.entry_id=?`
   ).bind(e.id).all();
   return { id:e.id, title:e.title, body:JSON.parse(e.body), status:e.status, basis_date:e.basis_date,
     citations: cites.map(r => ({ source:r.title, article:r.article_no, clause:r.clause_no,
-                                  text:r.text, verified:!!r.verified, region:r.name })) };
+                                  text:r.text, verified:!!r.verified, region:r.name, source_url:r.source_url })) };
 }
 
 // ============ Session (multi-turn T2.4) ============

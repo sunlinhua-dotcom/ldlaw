@@ -244,6 +244,17 @@ button { font-family: inherit; cursor: pointer; }
   font-size: 13.5px; color: var(--ink-2); max-width: 56ch; line-height: 1.85;
 }
 .v-tag { font-size: 11px; padding: 1px 7px; border-radius: 4px; white-space: nowrap; flex-shrink: 0; }
+.cite-foot { padding: 0 13px 11px; }
+.cite-link {
+  display: inline-flex; align-items: center; gap: 4px; font-size: 12.5px; font-weight: 600;
+  color: var(--seal); text-decoration: none; border-bottom: 1px solid color-mix(in srgb, var(--seal) 40%, transparent);
+  padding-bottom: 1px;
+}
+.cite-link:hover { color: var(--seal-deep); border-bottom-color: var(--seal-deep); }
+.cite-link.dim { color: var(--ink-3); border-bottom-color: var(--line-2); }
+.cite-link.dim:hover { color: var(--ink-2); }
+.airef-link { font-size: 12px; color: var(--ink-3); text-decoration: none; border-bottom: 1px dashed var(--line-2); margin-left: auto; white-space: nowrap; }
+.airef-link:hover { color: var(--seal); }
 .v-ok   { background: var(--green-bg); color: var(--green); }
 .v-warn { background: var(--gold-bg); color: var(--gold); }
 
@@ -1305,6 +1316,13 @@ function lvBadge(source) {
   const [icon, label] = citeMeta(source);
   return `<span class="lv-badge"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="${icon}"/></svg>${label}</span>`;
 }
+const FLK = 'https://flk.npc.gov.cn/';
+function citeLink(url) {
+  const real = typeof url === 'string' && /^https?:\/\//.test(url) && url !== FLK;
+  return real
+    ? `<a class="cite-link" href="${esc(url)}" target="_blank" rel="noopener noreferrer">查看官方原文出处 ↗</a>`
+    : `<a class="cite-link dim" href="${FLK}" target="_blank" rel="noopener noreferrer">到国家法律法规数据库核验 ↗</a>`;
+}
 function citeHtml(c) {
   const clause = c.clause ? `第${esc(c.clause)}款` : '';
   const color = citeMeta(c.source)[2];
@@ -1318,6 +1336,7 @@ function citeHtml(c) {
       ${v}<span class="tg">▸</span>
     </summary>
     <blockquote class="pretty">${esc(c.text)}</blockquote>
+    <div class="cite-foot">${citeLink(c.source_url)}</div>
   </details>`;
 }
 function updateAside(citations) {
@@ -1377,7 +1396,7 @@ function answerHtml(a, q) {
   if (a.ai_refs && a.ai_refs.length)
     h += `<div class="blk airefs"><div class="blk-label">AI 标 注 依 据 · 本库未收录</div>
       <div class="airef-note pretty">以下法条由 AI 依通用知识标注，本库未收录、未经逐字核验，请自行核对原文：</div>
-      ${a.ai_refs.map(r => `<div class="airef"><span class="airef-ref">${esc(r)}</span><span class="v-tag v-warn">未核验</span></div>`).join('')}</div>`;
+      ${a.ai_refs.map(r => `<div class="airef"><span class="airef-ref">${esc(r)}</span><span class="v-tag v-warn">未核验</span><a class="airef-link" href="${FLK}" target="_blank" rel="noopener noreferrer">去官方库核验 ↗</a></div>`).join('')}</div>`;
   if (a.warnings && a.warnings.length)
     h += `<div class="blk warnbox">${a.warnings.map(w => `<div class="pretty">${esc(w)}</div>`).join('')}</div>`;
   h += `<div class="ans-foot"><span class="disc">内容仅供参考，不构成法律意见</span>

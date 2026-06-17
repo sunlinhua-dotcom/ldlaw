@@ -191,7 +191,7 @@ def resolve_citations(kc: sqlite3.Connection, refs: list[str]) -> tuple[list[dic
         clause = norm_clause(m.group(3))
         row = kc.execute(
             """SELECT ls.title, la.article_no, la.clause_no, la.text, la.verified,
-                      r.name AS region
+                      r.name AS region, ls.source_url
                FROM legal_article la
                JOIN legal_source ls ON ls.id = la.source_id
                JOIN region r ON r.id = ls.region_id
@@ -200,7 +200,8 @@ def resolve_citations(kc: sqlite3.Connection, refs: list[str]) -> tuple[list[dic
             (title, art, clause, clause)).fetchone()
         if row:
             out.append({"source": row[0], "article": row[1], "clause": row[2],
-                        "text": row[3], "verified": bool(row[4]), "region": row[5]})
+                        "text": row[3], "verified": bool(row[4]), "region": row[5],
+                        "source_url": row[6]})
         else:
             unresolved.append(ref)
     if unresolved:
@@ -271,7 +272,7 @@ def retrieve(kc: sqlite3.Connection, question: str, region_name: str | None,
     where_ids = f"AND la.id IN ({','.join(map(str, ids))})" if ids else ""
     rows = kc.execute(
         f"""SELECT ls.title, la.article_no, la.clause_no, la.text, la.verified,
-                   r.name AS region
+                   r.name AS region, ls.source_url
             FROM legal_article la
             JOIN legal_source ls ON ls.id = la.source_id
             JOIN region r ON r.id = ls.region_id
@@ -279,12 +280,12 @@ def retrieve(kc: sqlite3.Connection, question: str, region_name: str | None,
         chain).fetchall()
     grams = set(_bigrams(question))
     scored = []
-    for title, art, clause, text, verified, region in rows:
+    for title, art, clause, text, verified, region, source_url in rows:
         score = sum(1 for g in grams if g in text)
         if score > 0:
             scored.append({"source": title, "article": art, "clause": clause,
                            "text": text, "verified": bool(verified),
-                           "region": region, "score": score})
+                           "region": region, "source_url": source_url, "score": score})
     scored.sort(key=lambda x: -x["score"])
     return scored[:k]
 
@@ -451,7 +452,7 @@ def entry_by_slug(kc: sqlite3.Connection, slug: str) -> dict | None:
         return None
     eid, title, body_json, status, basis = row
     cites = kc.execute(
-        """SELECT ls.title, la.article_no, la.clause_no, la.text, la.verified, r.name
+        """SELECT ls.title, la.article_no, la.clause_no, la.text, la.verified, r.name, ls.source_url
            FROM entry_citation ec
            JOIN legal_article la ON la.id = ec.article_id
            JOIN legal_source ls ON ls.id = la.source_id
@@ -460,7 +461,8 @@ def entry_by_slug(kc: sqlite3.Connection, slug: str) -> dict | None:
     return {"id": eid, "title": title, "body": json.loads(body_json),
             "status": status, "basis_date": basis,
             "citations": [{"source": r[0], "article": r[1], "clause": r[2],
-                           "text": r[3], "verified": bool(r[4]), "region": r[5]}
+                           "text": r[3], "verified": bool(r[4]), "region": r[5],
+                           "source_url": r[6]}
                           for r in cites]}
 
 
