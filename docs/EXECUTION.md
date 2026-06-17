@@ -46,7 +46,7 @@ Python `pipeline.open_answer` + JS `functions/_pipeline.js openAnswer` 双侧同
 | 中文分词 | jieba 预分词 → 空格分隔写入 FTS5 列（不依赖自定义 tokenizer 编译） |
 | LLM | deepseek-chat 为主；评测判分用 deepseek-reasoner |
 | 数据库 | 维持双库 SQLite（knowledge.db 只读整库重建 / app.db WAL）；schema 改动只允许加表加列 |
-| 官方法条来源 | flk.npc.gov.cn（国家法律法规数据库）优先；地方规定用各地人社/政府官网。**禁止裁判文书网爬取** |
+| 官方法条来源 | flk.npc.gov.cn（国家法律法规数据库）优先；地方规定用各地人社/政府官网。**禁止裁判文书网爬取**。**对标权威库 = 北大法宝 / 威科先行**（付费登录墙，禁止自动抓取，仅 G1 人工比对，`verify_articles.py --approve --benchmark` 留痕；覆盖完整性亦以其劳动法目录对标）|
 | 前端 | 维持单文件 `web/index.html` 响应式，不引入框架；遵守 djhh 中文排版规则（keep-all / 数字 nowrap / 千分位） |
 | 联网搜索 | 博查 Bocha Web Search（`src/websearch.py`，key 在 .env `BOCHA_API_KEY`）。**仅运营/知识层使用（方案 A）**：找官方源（T1.2/T1.3）、核验抓取（T1.4）、法规监测（F9）。问答管线接入（方案 B）未授权，须先评审 |
 

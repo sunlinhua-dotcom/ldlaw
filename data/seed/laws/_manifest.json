@@ -1,5 +1,5 @@
 {
- "_comment": "法规抓取清单：fetch_url 为抓取页面（gov.cn 官方或省级政府官网镜像），source_url 为权威源标注（G1 核验以 flk.npc.gov.cn 为准）。clause_splits 列出需单独成行供引用的款。",
+ "_comment": "法规抓取清单：fetch_url 为抓取页面（gov.cn 官方或省级政府官网镜像），source_url 为权威源标注（G1 核验以 flk.npc.gov.cn 为准）。对标权威库=北大法宝/威科先行（付费登录墙，禁止自动抓取，仅 G1 人工比对，--benchmark 留痕）。clause_splits 列出需单独成行供引用的款。",
  "laws": [
   {
    "slug": "labor-contract-law",
