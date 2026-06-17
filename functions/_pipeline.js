@@ -5,8 +5,8 @@ import {
   statutoryAnnualDays, exitProratedUnusedDays, dateDiffDays
 } from './_calc.js';
 
-export const REGIONS = ["上海","江苏","浙江","北京","天津","河北","广东",
-  "广州","深圳","南京","无锡","常州","苏州","杭州","宁波"];
+// 产品聚焦：仅杭州 + 上海（2026-06-17）。默认杭州。其余地区数据保留在库但不开放选择。
+export const REGIONS = ["杭州", "上海"];
 
 const REFUSE_CONCLUSION = "这个问题超出当前知识库可靠回答的范围（依据不足或属于个案争议）。为避免给出不准确的答案，建议转交合作律师处理。";
 const PRE2008_CONCLUSION = "员工入职早于 2008-01-01（劳动合同法施行日），经济补偿需分段计算，各地口径差异大（上海等地有特殊规则）。为避免算错，建议转交合作律师核算。";

@@ -177,13 +177,15 @@ button { font-family: inherit; cursor: pointer; }
 .concl {
   font-family: var(--serif); font-size: 17.5px; font-weight: 700;
   line-height: 1.55; max-width: 40ch;
+  padding-left: 14px; border-left: 3px solid var(--seal); margin-top: 4px;
 }
-.blk { margin-top: 16px; }
+.blk { margin-top: 18px; }
 .blk-label {
   font-size: 11px; font-weight: 700; letter-spacing: 3px;
-  color: var(--ink-3); margin-bottom: 7px;
+  color: var(--ink-3); margin-bottom: 9px;
   display: flex; align-items: center; gap: 8px;
 }
+.blk-label::before { content: ""; width: 3px; height: 13px; background: var(--seal); border-radius: 2px; flex-shrink: 0; }
 .blk-label::after { content: ""; flex: 1; height: 1px; background: var(--line-2); }
 .steps { padding-left: 0; display: grid; gap: 7px; font-size: 14px; color: var(--ink-2); list-style: none; counter-reset: st; }
 .steps li { display: flex; gap: 10px; counter-increment: st; }
@@ -213,28 +215,35 @@ button { font-family: inherit; cursor: pointer; }
 .stamp-label { display: block; font-size: 11px; letter-spacing: 4px; opacity: .75; }
 .stamp-num { font-family: var(--serif); font-size: 30px; font-weight: 800; line-height: 1.18; }
 
-/* —— 朱批引用 —— */
+/* —— 法条引用卡：每条一张卡，层级（法律/行政法规/司法解释/地方/文件）带图形徽章一眼可辨 —— */
 .cite {
-  border: none; border-left: 3px solid var(--seal);
-  background: linear-gradient(90deg, color-mix(in srgb, var(--seal-pale) 45%, transparent), transparent 70%);
-  border-radius: 0 8px 8px 0; margin-top: 8px;
+  border: 1px solid var(--line); border-left: 3px solid var(--lv, var(--seal));
+  background: var(--paper); border-radius: 10px; margin-top: 9px; overflow: hidden;
+  transition: box-shadow .15s;
 }
+.cite[open] { box-shadow: var(--shadow); }
 .cite summary {
-  cursor: pointer; padding: 9px 12px 9px 14px; font-size: 13.5px;
-  list-style: none; display: flex; align-items: baseline; gap: 8px;
+  cursor: pointer; padding: 10px 13px; font-size: 13.5px;
+  list-style: none; display: flex; align-items: center; gap: 9px; flex-wrap: wrap;
 }
 .cite summary::-webkit-details-marker { display: none; }
+.lv-badge {
+  flex-shrink: 0; display: inline-flex; align-items: center; gap: 4px;
+  font-size: 11.5px; font-weight: 700; letter-spacing: .5px;
+  padding: 2.5px 9px; border-radius: 999px;
+  color: var(--lv, var(--seal)); background: color-mix(in srgb, var(--lv, var(--seal)) 13%, transparent);
+}
+.lv-badge svg { width: 13px; height: 13px; }
+.cite-body { min-width: 0; flex: 1; overflow-wrap: anywhere; }
 .cite-src { font-family: var(--serif); font-weight: 700; }
-.cite-art { color: var(--seal-deep); white-space: nowrap; }
-.cite summary .tg { margin-left: auto; color: var(--ink-3); font-size: 11px; transition: transform .2s; }
+.cite-art { color: var(--seal-deep); white-space: nowrap; font-weight: 600; }
+.cite summary .tg { margin-left: auto; color: var(--ink-3); font-size: 11px; transition: transform .2s; flex-shrink: 0; }
 .cite[open] summary .tg { transform: rotate(90deg); }
 .cite blockquote {
-  margin: 0; padding: 2px 16px 13px 14px;
-  font-size: 13.5px; color: var(--ink-2); max-width: 56ch; line-height: 1.8;
+  margin: 0; padding: 4px 16px 14px; border-top: 1px solid var(--line-2);
+  font-size: 13.5px; color: var(--ink-2); max-width: 56ch; line-height: 1.85;
 }
-/* 引用来源层级图标：一眼可辨法律 / 行政法规 / 司法解释 / 地方 / 文件 */
-.cite-lv { flex-shrink: 0; width: 15px; height: 15px; align-self: center; opacity: .92; }
-.v-tag { font-size: 11px; padding: 0 7px; border-radius: 3px; white-space: nowrap; }
+.v-tag { font-size: 11px; padding: 1px 7px; border-radius: 4px; white-space: nowrap; flex-shrink: 0; }
 .v-ok   { background: var(--green-bg); color: var(--green); }
 .v-warn { background: var(--gold-bg); color: var(--gold); }
 
@@ -964,9 +973,7 @@ footer p { font-size: 12.5px; color: var(--ink-3); max-width: 56ch; }
       <label class="region-wrap">
         <svg width="14" height="14" color="var(--seal)"><use href="#i-pin"/></svg>
         <select id="region">
-          <option>上海</option><option>江苏</option><option>浙江</option>
-          <option>北京</option><option>天津</option><option>河北</option>
-          <option>广东</option><option>广州</option><option>深圳</option>
+          <option>杭州</option><option>上海</option>
         </select>
       </label>
     </div>
@@ -1083,8 +1090,7 @@ footer p { font-size: 12.5px; color: var(--ink-3); max-width: 56ch; }
         </select>
         <select id="case-region">
           <option value="">全部地区</option>
-          <option>上海</option><option>江苏</option><option>浙江</option>
-          <option>北京</option><option>天津</option><option>广东</option>
+          <option>杭州</option><option>上海</option>
         </select>
       </div>
       <div class="case-cards" id="case-cards"></div>
@@ -1292,19 +1298,25 @@ const CITE_LV = {
   local_rule:      ['#i-pin',    '地方政府规章','var(--green)'],
   normative_doc:   ['#ci-doc',   '规范性文件', 'var(--ink-3)'],
 };
-function citeLvIcon(source) {
-  const m = CITE_LV[SRC_LEVEL[source]];
-  if (!m) return '';
-  return `<svg class="cite-lv" viewBox="0 0 24 24" fill="none" style="color:${m[2]}" role="img" aria-label="${m[1]}"><title>${m[1]}</title><use href="${m[0]}"/></svg>`;
+function citeMeta(source) {
+  return CITE_LV[SRC_LEVEL[source]] || ['#ci-doc', '法规', 'var(--ink-3)'];
+}
+function lvBadge(source) {
+  const [icon, label] = citeMeta(source);
+  return `<span class="lv-badge"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="${icon}"/></svg>${label}</span>`;
 }
 function citeHtml(c) {
   const clause = c.clause ? `第${esc(c.clause)}款` : '';
+  const color = citeMeta(c.source)[2];
   const v = c.verified
     ? '<span class="v-tag v-ok">已核验</span>'
     : '<span class="v-tag v-warn">待核验</span>';
-  return `<details class="cite">
-    <summary>${citeLvIcon(c.source)}<span class="cite-src">《${esc(c.source)}》</span>
-      <span class="cite-art">${esc(c.article)}${clause}</span>${v}<span class="tg">▸</span></summary>
+  return `<details class="cite" style="--lv:${color}">
+    <summary>
+      ${lvBadge(c.source)}
+      <span class="cite-body"><span class="cite-src">《${esc(c.source)}》</span> <span class="cite-art">${esc(c.article)}${clause}</span></span>
+      ${v}<span class="tg">▸</span>
+    </summary>
     <blockquote class="pretty">${esc(c.text)}</blockquote>
   </details>`;
 }
@@ -1859,24 +1871,18 @@ function renderArticles() {
 $('#art-src').onchange = renderArticles;
 $('#art-q').oninput = renderArticles;
 
-/* 地区选择器：以 /api/db/regions 为唯一来源，省→市分组重建（顶栏 + 计算器） */
+/* 地区选择器：产品聚焦杭州 + 上海，默认杭州（FOCUS_REGIONS 顺序即展示顺序，首项为默认）。
+   其余地区数据保留在库但不开放选择。*/
+const FOCUS_REGIONS = ['杭州', '上海'];
 function fillRegionSelects(regions) {
-  const provs = regions.filter(r => r.level === 'province');
-  const cities = regions.filter(r => r.level === 'city');
-  let html = '';
-  for (const p of provs) {
-    const kids = cities.filter(c => c.parent === p.name);
-    html += kids.length
-      ? `<optgroup label="${esc(p.name)}"><option value="${esc(p.name)}">${esc(p.name)}（全省）</option>`
-        + kids.map(c => `<option>${esc(c.name)}</option>`).join('') + `</optgroup>`
-      : `<option>${esc(p.name)}</option>`;
-  }
+  const html = FOCUS_REGIONS
+    .filter(name => regions.some(r => r.name === name) || true)  // 容错：即便 /api/db/regions 未含也保留
+    .map(name => `<option>${esc(name)}</option>`).join('');
   ['#region', '#s-region'].forEach(id => {
     const sel = $(id); if (!sel) return;
     const prev = sel.value;
     sel.innerHTML = html;
-    sel.value = prev;
-    if (!sel.value) sel.value = '上海';
+    sel.value = FOCUS_REGIONS.includes(prev) ? prev : FOCUS_REGIONS[0];
   });
 }
 

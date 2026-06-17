@@ -5,11 +5,11 @@
    "region": "上海",
    "param_key": "social_avg_wage_monthly",
    "value": {
-    "amount": 12307,
+    "amount": 12434,
     "unit": "CNY/月",
-    "note": "2023 年度城镇单位就业人员月平均工资，近似值待官方核验"
+    "note": "2024 年度全口径城镇单位就业人员月平均工资 12,434；经济补偿3倍封顶 37,302。来源 rsj.sh.gov.cn 2025-09-18（待 G1 核验）"
    },
-   "period": "2023",
+   "period": "2024",
    "verified": false
   },
   {
@@ -82,11 +82,11 @@
    "region": "上海",
    "param_key": "min_wage_monthly",
    "value": {
-    "amount": 2690,
+    "amount": 2740,
     "unit": "CNY/月",
-    "note": "2023-07-01 起执行，待官方核验"
+    "note": "2025-07-01 起（沪人社规〔2025〕10号）；不含个人缴付社保/公积金（待 G1 核验）"
    },
-   "period": "2023",
+   "period": "2025",
    "verified": false
   },
   {
@@ -225,11 +225,11 @@
    "region": "杭州",
    "param_key": "min_wage_monthly",
    "value": {
-    "amount": 2490,
+    "amount": 2660,
     "unit": "CNY/月",
-    "note": "浙江一类地区标准，待官方核验"
+    "note": "2026-01-01 起 浙江一类地区（浙政发〔2025〕23号）（待 G1 核验）"
    },
-   "period": "2023",
+   "period": "2026",
    "verified": false
   },
   {
@@ -241,6 +241,17 @@
     "note": "浙江一类地区标准，待官方核验"
    },
    "period": "2023",
+   "verified": false
+  },
+  {
+   "region": "杭州",
+   "param_key": "social_avg_wage_monthly",
+   "value": {
+    "amount": 13931,
+    "unit": "CNY/月",
+    "note": "杭州市 2024 年度非私营单位在岗职工月平均工资 13,931；经济补偿3倍封顶 41,794。来源 杭州市统计局公报 2025-06-26。⚠封顶口径司法有分歧、默认取在岗职工档，最终口径待律师 G1 拍板；严禁误用浙江全省社保口径 8,433"
+   },
+   "period": "2024",
    "verified": false
   }
  ]

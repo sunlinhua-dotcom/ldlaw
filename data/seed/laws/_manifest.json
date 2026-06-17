@@ -203,7 +203,7 @@
    "publish_date": "2016-06-17",
    "effective_date": "2016-08-01",
    "source_url": "https://rsj.sh.gov.cn/tgzzlgl_17309/20200617/t0035_1390573.html",
-   "fetch_url": "https://rsj.sh.gov.cn/tgzzlgl_17309/20200617/t0035_1390573.html",
+   "fetch_url": "https://rsj.sh.gov.cn/tgzfl_17732/20260412/t0035_1439868.html",
    "coverage": "full",
    "min_articles": 20,
    "default_topics": [
@@ -328,6 +328,40 @@
    "min_articles": 30,
    "default_topics": [
     "社保公积金"
+   ]
+  },
+  {
+   "slug": "zhejiang-wage-payment",
+   "title": "浙江省企业工资支付管理办法",
+   "doc_no": "浙江省人民政府令第353号",
+   "issuer": "浙江省人民政府",
+   "level": "local_rule",
+   "region": "浙江",
+   "publish_date": "2021-12-21",
+   "effective_date": "2022-03-01",
+   "source_url": "https://www.zj.gov.cn/art/2021/12/21/art_1229604638_2382673.html",
+   "fetch_url": "https://www.zj.gov.cn/art/2021/12/21/art_1229604638_2382673.html",
+   "coverage": "full",
+   "min_articles": 25,
+   "default_topics": [
+    "工资与福利"
+   ]
+  },
+  {
+   "slug": "zhejiang-labor-arbitration",
+   "title": "浙江省劳动人事争议调解仲裁条例",
+   "doc_no": "浙江省人大常委会公告（2015）",
+   "issuer": "浙江省人民代表大会常务委员会",
+   "level": "local_reg",
+   "region": "浙江",
+   "publish_date": "2015-12-04",
+   "effective_date": "2016-05-01",
+   "source_url": "https://rlsbt.zj.gov.cn/art/2016/1/20/art_1229506669_298496.html",
+   "fetch_url": "https://rlsbt.zj.gov.cn/art/2016/1/20/art_1229506669_298496.html",
+   "coverage": "full",
+   "min_articles": 30,
+   "default_topics": [
+    "劳动争议"
    ]
   }
  ]
