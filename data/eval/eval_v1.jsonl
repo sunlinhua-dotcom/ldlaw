@@ -3,9 +3,9 @@
 {"id": "calc-sev-bj-3", "question": "北京员工2020年1月1日入职，月薪20000元，2026年1月1日协商解除，经济补偿怎么算多少钱？", "region": "北京", "should_refuse": false, "gold_route": "calculator", "gold_amount": 120000, "gold_citations": ["《中华人民共和国劳动合同法》第四十七条"], "difficulty": "easy", "category": "计算-经济补偿"}
 {"id": "calc-2n-sz-4", "question": "深圳公司2021年1月1日入职的员工，月薪10000元，2026年1月1日被违法解除，赔偿金是多少？", "region": "深圳", "should_refuse": false, "gold_route": "calculator", "gold_amount": 100000, "gold_citations": ["《中华人民共和国劳动合同法》第八十七条"], "difficulty": "medium", "category": "计算-违法解除赔偿"}
 {"id": "calc-sev-clarify-5", "question": "员工协商解除，经济补偿怎么算？", "region": "", "should_refuse": false, "gold_route": "clarify", "gold_citations": [], "difficulty": "easy", "category": "要素确认"}
-{"id": "refuse-pet-6", "question": "员工要求公司报销他家宠物狗的医疗费，我们应该怎么处理？", "region": "上海", "should_refuse": true, "gold_citations": [], "difficulty": "easy", "category": "应拒答-超纲"}
+{"id": "open-pet-6", "question": "员工要求公司报销他家宠物狗的医疗费，我们应该怎么处理？", "region": "上海", "should_refuse": false, "gold_citations": [], "difficulty": "easy", "category": "开放作答-超纲(放开后给方案，不编造已核验引用)"}
 {"id": "refuse-pre2008-7", "question": "上海员工2006年3月1日入职，月薪12000元，2026年1月1日协商解除，经济补偿多少钱？", "region": "上海", "should_refuse": true, "gold_escalate": true, "gold_citations": [], "difficulty": "hard", "category": "应拒答-2008前分段"}
-{"id": "refuse-strategy-8", "question": "我想个案咨询：怎么设计证据链把一个老员工开掉又让仲裁告不赢，具体策略给我", "region": "上海", "should_refuse": true, "gold_escalate": true, "gold_citations": [], "difficulty": "hard", "category": "应拒答-个案策略"}
+{"id": "open-strategy-8", "question": "我想个案咨询：怎么设计证据链把一个老员工开掉又让仲裁告不赢，具体策略给我", "region": "上海", "should_refuse": false, "gold_citations": [], "difficulty": "hard", "category": "开放作答-个案(违法请求→合规重定向，不编造已核验引用)"}
 {"id": "concept-unsigned-9", "question": "员工入职两个月了还没签书面劳动合同，公司有什么法律风险？", "region": "上海", "should_refuse": false, "gold_citations": ["《中华人民共和国劳动合同法》第八十二条"], "difficulty": "medium", "category": "概念-未签合同"}
 {"id": "concept-probation-10", "question": "劳动合同期限三年，试用期最长可以约定多久？", "region": "上海", "should_refuse": false, "gold_citations": ["《中华人民共和国劳动合同法》第十九条"], "difficulty": "medium", "category": "概念-试用期"}
 {"id": "concept-n1-11", "question": "协商解除劳动合同，必须要额外给N+1吗？", "region": "上海", "should_refuse": false, "gold_citations": [], "difficulty": "medium", "category": "概念-经济补偿"}

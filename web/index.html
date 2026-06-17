@@ -249,6 +249,15 @@ button { font-family: inherit; cursor: pointer; }
 .warnbox div { padding-left: 14px; position: relative; max-width: 62ch; }
 .warnbox div::before { content: "‼"; position: absolute; left: 0; font-weight: 700; color: var(--gold); }
 
+/* 放开作答里 AI 标注的库外引用：虚线框 + 警示色，与已核验法条卡明显区分 */
+.airefs { border: 1px dashed var(--gold); border-radius: 9px; padding: 10px 13px;
+  background: color-mix(in srgb, var(--gold-bg) 35%, transparent); }
+.airef-note { font-size: 12.5px; color: #7a5d20; margin-bottom: 7px; max-width: 60ch; }
+.airef { display: flex; align-items: center; gap: 8px; padding: 4px 0;
+  font-size: 13.5px; color: var(--ink-2); }
+.airef + .airef { border-top: 1px solid var(--line-2); }
+.airef-ref { min-width: 0; overflow-wrap: anywhere; }
+
 .clar { display: grid; gap: 6px; font-size: 14px; color: var(--ink-2); }
 .clar li { list-style: none; padding-left: 22px; position: relative; }
 .clar li::before {
@@ -1251,6 +1260,7 @@ const ROUTE_LABEL = {
   calculator: ['确定性计算', 'b-seal'],
   entry_hit:  ['命中词条 · 律师口径', 'b-green'],
   rag:        ['检索生成 · 已过校验', 'b-seal'],
+  open:       ['AI 通用解答 · 参考', 'b-gold'],
   clarify:    ['要素确认', 'b-gray'],
   refuse:     ['拒答 · 建议转律师', 'b-gold'],
 };
@@ -1286,8 +1296,12 @@ function answerHtml(a, q) {
       a.cases.map(c => `<p class="pretty" style="font-size:13.5px;color:var(--ink-2);max-width:54ch">
         <strong>${esc(c.title)}</strong>　${esc(c.gist)}</p>`).join('') + `</div>`;
   if (a.citations && a.citations.length)
-    h += `<div class="blk cite-in-msg"><div class="blk-label">法 条 依 据</div>
+    h += `<div class="blk cite-in-msg"><div class="blk-label">${a.route === 'open' ? '库 内 依 据（已核对存在）' : '法 条 依 据'}</div>
       ${a.citations.map(citeHtml).join('')}</div>`;
+  if (a.ai_refs && a.ai_refs.length)
+    h += `<div class="blk airefs"><div class="blk-label">AI 标 注 依 据 · 本库未收录</div>
+      <div class="airef-note pretty">以下法条由 AI 依通用知识标注，本库未收录、未经逐字核验，请自行核对原文：</div>
+      ${a.ai_refs.map(r => `<div class="airef"><span class="airef-ref">${esc(r)}</span><span class="v-tag v-warn">未核验</span></div>`).join('')}</div>`;
   if (a.warnings && a.warnings.length)
     h += `<div class="blk warnbox">${a.warnings.map(w => `<div class="pretty">${esc(w)}</div>`).join('')}</div>`;
   h += `<div class="ans-foot"><span class="disc">内容仅供参考，不构成法律意见</span>

@@ -307,7 +307,7 @@ async function logAnswer(db, sessionId, question, facts, res) {
       hitEntry = er?.id ?? null;
     }
     const confidence = res.route === 'entry_hit' || res.route === 'calculator' ? 1.0
-      : res.route === 'rag' ? 0.7 : 0.0;
+      : res.route === 'rag' ? 0.7 : res.route === 'open' ? 0.4 : 0.0;
     await db.prepare(
       `INSERT INTO qa_message(session_id,role,content,facts,route,hit_entry_id,calculator_key,citations,confidence,escalated,created_at)
        VALUES (?,?,?,?,?,?,?,?,?,?,?)`
@@ -371,6 +371,31 @@ async function ragAnswer(db, env, question, regionName) {
   return { conclusion:out.conclusion, analysis:out.analysis||'', citations:resolved, cases:usedCases };
 }
 
+// ============ 放开作答（用户授权：超纲不硬拒，给方案 + 标出处）============
+// 安全机制 = 模型提议、库来核验：模型给的法条逐条过 resolveCitations，
+// 库里有的进 citations（真·已核验），库里没有的进 ai_refs（标 AI·未核验，不冒充库内）。
+// 守底线：涉钱仍只走 calculators（prompt 禁止给金额）；编造的法条隔离标注，不进已核验引用。
+const OPEN_SYS = `你是面向企业 HR 的资深劳动法专家。请务必直接给出可操作的解决方案，不要回避、不要只说"咨询律师"。要求：
+1. 先给一句话结论，再给简要分析，最后给 2-4 条可操作步骤；
+2. 必须标注法律依据——列出你依据的具体法条，写法严格为「《法规全称》第X条」（如《中华人民共和国劳动合同法》第八十二条）；没有十足把握的条号宁可不写，绝不编造；
+3. 只输出 JSON：{"conclusion":"一句话结论","analysis":"简要分析（200字内）","steps":["步骤1","步骤2"],"citations":["《中华人民共和国劳动合同法》第八十二条"]}
+4. 禁止给出任何具体金额的计算结果或数字答案；涉及金额只描述法定规则（如"二倍工资""N+1""1.5 倍加班费"），具体数额一律提示改用"算钱"工具或咨询律师；
+5. 这是一般法律信息，不构成正式法律意见。`;
+
+async function openAnswer(db, env, question, regionName) {
+  const out = await chatJson(env, [
+    { role:'system', content:OPEN_SYS },
+    { role:'user', content:`地区：${regionName||'全国'}\n问题：${question}` }
+  ], { maxTokens:800 });
+  if (!out || !out.conclusion || !String(out.conclusion).trim()) return null;
+  const refs = Array.isArray(out.citations) ? out.citations.map(String) : [];
+  const [resolved, unresolved] = await resolveCitations(db, refs);
+  const steps = (Array.isArray(out.steps) ? out.steps : [])
+    .map(s => String(s).trim()).filter(Boolean).slice(0, 6);
+  return { conclusion:String(out.conclusion), analysis:String(out.analysis||''),
+    steps, citations:resolved, ai_refs:unresolved };
+}
+
 // ============ Medical guard ============
 
 async function medicalGuard(db, question, facts, hireStr, termStr, res, intent) {
@@ -419,7 +444,8 @@ export async function answer(db, env, question, defaultRegion, sessionId) {
 
   const res = { route:'refuse', llm_used:llmUsed, conclusion:REFUSE_CONCLUSION,
     steps:[], amount:null, analysis:null, citations:[], cases:[], region,
-    warnings:[], clarify:[], entry:null, escalate:false, session_id:sid };
+    warnings:[], clarify:[], entry:null, escalate:false, session_id:sid,
+    ai_refs:[], verified:true };
 
   let intent = facts.intent || 'other';
   const fire = !!(facts.fire_context || FIRE_RE.test(question));
@@ -429,7 +455,7 @@ export async function answer(db, env, question, defaultRegion, sessionId) {
   facts.intent = intent;
 
   async function finish() {
-    if (facts.region_defaulted && ['calculator','rag'].includes(res.route)) {
+    if (facts.region_defaulted && ['calculator','rag','open'].includes(res.route)) {
       res.warnings.push(`地区取自页面默认设置（${region}），请确认实际用工所在地`);
     }
     const local = [...new Set(res.citations.filter(c => c.region && c.region !== '全国').map(c => c.region))];
@@ -517,6 +543,20 @@ export async function answer(db, env, question, defaultRegion, sessionId) {
     return finish();
   }
 
+  // —— 放开作答兜底（用户授权）：超纲不硬拒，给方案 + 出处分两档标注 ——
+  const opened = env.DEEPSEEK_API_KEY ? await openAnswer(db, env, question, region) : null;
+  if (opened) {
+    let note = '本回答为 AI 基于通用法律知识生成的参考方案。';
+    if (opened.citations.length) note += '标「库内依据」的法条已在本库核对存在；';
+    if (opened.ai_refs.length) note += '标「AI 标注」的法条本库未收录、未经逐字核验，请自行核对原文；';
+    note += '本回答不构成正式法律意见，重要决策请咨询执业律师。';
+    Object.assign(res, { route:'open', verified:false, conclusion:opened.conclusion,
+      analysis:opened.analysis, steps:opened.steps, citations:opened.citations,
+      ai_refs:opened.ai_refs, escalate:false, warnings:[note] });
+    return finish();
+  }
+
+  // LLM 不可用等极端情况才硬拒（规则引擎降级态）
   Object.assign(res, { route:'refuse', escalate:true });
   return finish();
 }

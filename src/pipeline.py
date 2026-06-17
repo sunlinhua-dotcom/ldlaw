@@ -404,6 +404,44 @@ def rag_answer(kc: sqlite3.Connection, question: str,
             "citations": resolved, "cases": used_cases}
 
 
+# ============ 放开作答（用户授权：超纲不硬拒，给方案 + 标出处）============
+# 设计取舍：用户要"自由答 + 说明出处"。安全机制 = 模型提议、库来核验——
+# 模型给的法条逐条过 resolve_citations：库里有的进 citations（真·已核验），
+# 库里没有的进 ai_refs（明确标"AI 标注·未核验"，绝不冒充库内依据）。
+# 守住两条底线：① 涉钱计算仍只走 calculators.py（prompt 禁止给金额数字）；
+# ② 编造的法条被隔离标注，不进已核验引用——评测"编造引用率"只统计已核验引用。
+OPEN_SYS = """你是面向企业 HR 的资深劳动法专家。请务必直接给出可操作的解决方案，不要回避、不要只说"咨询律师"。要求：
+1. 先给一句话结论，再给简要分析，最后给 2-4 条可操作步骤；
+2. 必须标注法律依据——列出你依据的具体法条，写法严格为「《法规全称》第X条」（如《中华人民共和国劳动合同法》第八十二条）；没有十足把握的条号宁可不写，绝不编造；
+3. 只输出 JSON：{"conclusion":"一句话结论","analysis":"简要分析（200字内）","steps":["步骤1","步骤2"],"citations":["《中华人民共和国劳动合同法》第八十二条"]}
+4. 禁止给出任何具体金额的计算结果或数字答案；涉及金额只描述法定规则（如"二倍工资""N+1""1.5 倍加班费"），具体数额一律提示改用"算钱"工具或咨询律师；
+5. 这是一般法律信息，不构成正式法律意见。"""
+
+
+def open_answer(kc: sqlite3.Connection, question: str,
+                region_name: str | None) -> dict | None:
+    """放开作答：模型基于通用法律知识给方案，法条逐条回库核验后分两档返回。
+    成功返回 {conclusion, analysis, steps, citations(库内已核验), ai_refs(库外·AI标注)}。"""
+    if not llm.available():
+        return None
+    try:
+        out = llm.chat_json(
+            [{"role": "system", "content": OPEN_SYS},
+             {"role": "user", "content": f"地区：{region_name or '全国'}\n问题：{question}"}],
+            max_tokens=800)
+    except Exception:  # noqa: BLE001
+        return None
+    if not isinstance(out, dict) or not str(out.get("conclusion", "")).strip():
+        return None
+    refs = out.get("citations") or []
+    if not isinstance(refs, list):
+        refs = []
+    resolved, unresolved = resolve_citations(kc, [str(r) for r in refs])
+    steps = [str(s).strip() for s in (out.get("steps") or []) if str(s).strip()][:6]
+    return {"conclusion": str(out["conclusion"]), "analysis": str(out.get("analysis", "")),
+            "steps": steps, "citations": resolved, "ai_refs": unresolved}
+
+
 # ============ 词条 ============
 
 def entry_by_slug(kc: sqlite3.Connection, slug: str) -> dict | None:
@@ -938,7 +976,8 @@ def _answer(kc, question: str, default_region: str | None,
     res: dict = {"route": "refuse", "llm_used": llm_used, "conclusion": REFUSE_CONCLUSION,
                  "steps": [], "amount": None, "analysis": None, "citations": [],
                  "cases": [], "region": region, "warnings": [], "clarify": [],
-                 "entry": None, "escalate": False, "session_id": sid}
+                 "entry": None, "escalate": False, "session_id": sid,
+                 "ai_refs": [], "verified": True}
     intent = facts.get("intent", "other")
     # intent 兜底纠偏（规则层不信任 LLM 的路由判断）：
     # ① 明确"开除/辞退 + 问钱"却被判 other/concept → 回到测算路由；
@@ -952,7 +991,7 @@ def _answer(kc, question: str, default_region: str | None,
     facts["intent"] = intent
 
     def finish() -> dict:
-        if facts.get("region_defaulted") and res["route"] in ("calculator", "rag"):
+        if facts.get("region_defaulted") and res["route"] in ("calculator", "rag", "open"):
             res["warnings"].append(f"地区取自页面默认设置（{region}），请确认实际用工所在地")
         # 地方依据适用性声明（T2.5）
         local = sorted({c["region"] for c in res["citations"] if c.get("region") not in (None, "全国")})
@@ -1067,6 +1106,22 @@ def _answer(kc, question: str, default_region: str | None,
                              "重要决策前建议人工复核或转律师确认"])
         return finish()
 
+    # —— 放开作答兜底（用户授权）：超纲不硬拒，给方案 + 出处分两档标注 ——
+    opened = open_answer(kc, question, region) if llm.available() else None
+    if opened:
+        note = "本回答为 AI 基于通用法律知识生成的参考方案。"
+        if opened["citations"]:
+            note += "标「库内依据」的法条已在本库核对存在；"
+        if opened["ai_refs"]:
+            note += "标「AI 标注」的法条本库未收录、未经逐字核验，请自行核对原文；"
+        note += "本回答不构成正式法律意见，重要决策请咨询执业律师。"
+        res.update(route="open", verified=False, conclusion=opened["conclusion"],
+                   analysis=opened["analysis"], steps=opened["steps"],
+                   citations=opened["citations"], ai_refs=opened["ai_refs"],
+                   escalate=False, warnings=[note])
+        return finish()
+
+    # LLM 不可用等极端情况才硬拒（规则引擎降级态）
     res.update(route="refuse", escalate=True)
     return finish()
 
@@ -1114,7 +1169,7 @@ def _log(session_id: int | None, question: str, facts: dict, res: dict) -> None:
              json.dumps([f"《{c['source']}》{c['article']}" for c in res["citations"]],
                         ensure_ascii=False),
              1.0 if res["route"] in ("entry_hit", "calculator") else
-             (0.7 if res["route"] == "rag" else 0.0),
+             (0.7 if res["route"] == "rag" else 0.4 if res["route"] == "open" else 0.0),
              1 if res["escalate"] else 0, now_iso()))
         ac.commit()
         ac.close()

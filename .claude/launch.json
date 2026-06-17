@@ -7,6 +7,13 @@
       "runtimeArgs": ["src/server.py", "8400"],
       "port": 8400,
       "autoPort": false
+    },
+    {
+      "name": "ldlawq-deck",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "8455", "--directory", "pitch"],
+      "port": 8455,
+      "autoPort": false
     }
   ]
 }
