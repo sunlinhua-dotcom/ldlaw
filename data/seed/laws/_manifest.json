@@ -244,6 +244,91 @@
    "default_topics": [
     "劳动合同"
    ]
+  },
+  {
+   "slug": "migrant-worker-wage-regulation",
+   "title": "保障农民工工资支付条例",
+   "doc_no": "国务院令第724号",
+   "issuer": "国务院",
+   "level": "admin_reg",
+   "region": "CN",
+   "publish_date": "2019-12-30",
+   "effective_date": "2020-05-01",
+   "source_url": "https://flk.npc.gov.cn/",
+   "fetch_url": "https://www.chuzhou.gov.cn/public/152523227/1109962465.html",
+   "coverage": "full",
+   "min_articles": 40,
+   "default_topics": [
+    "工资与福利"
+   ]
+  },
+  {
+   "slug": "labor-security-supervision-regulation",
+   "title": "劳动保障监察条例",
+   "doc_no": "国务院令第423号",
+   "issuer": "国务院",
+   "level": "admin_reg",
+   "region": "CN",
+   "publish_date": "2004-11-01",
+   "effective_date": "2004-12-01",
+   "source_url": "https://flk.npc.gov.cn/",
+   "fetch_url": "http://rsj.anshun.gov.cn/newsite/zwgk/zfxxgk/fdzdgknr/zcwj/fgwj/202309/t20230901_82194050.html",
+   "coverage": "full",
+   "min_articles": 30,
+   "default_topics": [
+    "工资与福利"
+   ]
+  },
+  {
+   "slug": "trade-union-law",
+   "title": "中华人民共和国工会法",
+   "doc_no": "2021 年修正",
+   "issuer": "全国人民代表大会常务委员会",
+   "level": "law",
+   "region": "CN",
+   "publish_date": "2021-12-24",
+   "effective_date": "2022-01-01",
+   "source_url": "https://flk.npc.gov.cn/",
+   "fetch_url": "https://fgw.sh.gov.cn/ys-laogong-1.4.2.2/20240124/1253131e5af944848ab919e2f3f7a58e.html",
+   "coverage": "full",
+   "min_articles": 40,
+   "default_topics": [
+    "劳动合同"
+   ]
+  },
+  {
+   "slug": "labor-dispatch-provisions",
+   "title": "劳务派遣暂行规定",
+   "doc_no": "人力资源和社会保障部令第22号",
+   "issuer": "人力资源和社会保障部",
+   "level": "dept_rule",
+   "region": "CN",
+   "publish_date": "2014-01-24",
+   "effective_date": "2014-03-01",
+   "source_url": "https://flk.npc.gov.cn/",
+   "fetch_url": "http://hrss.yn.gov.cn/NewsView.aspx?pid=971&nid=63731&cid=682&isZt=7",
+   "coverage": "full",
+   "min_articles": 25,
+   "default_topics": [
+    "劳动合同"
+   ]
+  },
+  {
+   "slug": "unemployment-insurance-regulation",
+   "title": "失业保险条例",
+   "doc_no": "国务院令第258号",
+   "issuer": "国务院",
+   "level": "admin_reg",
+   "region": "CN",
+   "publish_date": "1999-01-22",
+   "effective_date": "1999-01-22",
+   "source_url": "https://flk.npc.gov.cn/",
+   "fetch_url": "http://rsj.huizhou.gov.cn/ywzt/yhyshj/content/mpost_5288587.html",
+   "coverage": "full",
+   "min_articles": 30,
+   "default_topics": [
+    "社保公积金"
+   ]
   }
  ]
 }
