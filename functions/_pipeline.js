@@ -18,7 +18,33 @@ function nowIso() { return new Date().toISOString().replace(/\.\d{3}Z$/, 'Z'); }
 
 // ============ LLM ============
 
+// ============ LLM：多 provider + 可切换模型 ============
+// 凭据全在服务端（CF secret / .env），永不下发前端。新增 provider 在此登记。
+// deepseek-chat → DeepSeek（OpenAI 兼容）；claude-* → Anthropic Messages（经 apiyi 中转）。
+function llmAvailable(env) {
+  return !!(env.DEEPSEEK_API_KEY || env.CLAUDE_API_KEY);
+}
+function availableModels(env) {
+  const out = [];
+  if (env.DEEPSEEK_API_KEY) out.push({ id: 'deepseek-chat', label: 'DeepSeek', provider: 'deepseek' });
+  if (env.CLAUDE_API_KEY) out.push({ id: env.CLAUDE_MODEL || 'claude-opus-4-8', label: 'Claude', provider: 'claude' });
+  return out;
+}
+function activeModel(env) {
+  const want = env._model;
+  const avail = availableModels(env);
+  if (want && avail.some(m => m.id === want)) return want;
+  return avail[0]?.id || 'deepseek-chat';
+}
+
 export async function chatJson(env, messages, opts = {}) {
+  const model = opts.model || activeModel(env);
+  const isClaude = String(model).startsWith('claude');
+  return isClaude ? chatClaude(env, model, messages, opts)
+                  : chatDeepseek(env, messages, opts);
+}
+
+async function chatDeepseek(env, messages, opts) {
   const key = env.DEEPSEEK_API_KEY;
   if (!key) return null;
   try {
@@ -40,6 +66,37 @@ export async function chatJson(env, messages, opts = {}) {
     return content ? JSON.parse(content) : null;
   } catch { return null; }
 }
+
+// Anthropic Messages 格式（system 走顶层；无 json_object 模式，靠 prompt 约束 + 抽取首个 JSON 对象）
+async function chatClaude(env, model, messages, opts) {
+  const key = env.CLAUDE_API_KEY;
+  if (!key) return null;
+  const sys = messages.filter(m => m.role === 'system').map(m => m.content).join('\n\n')
+            + '\n\n严格要求：只输出 JSON 对象本身，不要任何解释文字，不要 markdown 代码块包裹。';
+  const msgs = messages.filter(m => m.role !== 'system')
+    .map(m => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: String(m.content) }));
+  try {
+    const resp = await fetch(env.CLAUDE_BASE_URL || 'https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01' },
+      body: JSON.stringify({
+        model: env.CLAUDE_MODEL || model,
+        max_tokens: opts.maxTokens || 1200,
+        temperature: opts.temperature ?? 0.1,
+        system: sys,
+        messages: msgs
+      }),
+      signal: AbortSignal.timeout((opts.timeout || 60) * 1000)
+    });
+    const data = await resp.json();
+    if (data.error || !Array.isArray(data.content)) return null;
+    let text = data.content.map(b => b.text || '').join('').trim();
+    const m = text.match(/\{[\s\S]*\}/);   // 抽取首个 JSON 对象，容错代码块/前后赘言
+    return m ? JSON.parse(m[0]) : null;
+  } catch { return null; }
+}
+
+export { llmAvailable, availableModels, activeModel };
 
 // ============ FTS + retrieval ============
 
@@ -535,7 +592,7 @@ export async function answer(db, env, question, defaultRegion, sessionId) {
     }
   }
 
-  const rag = env.DEEPSEEK_API_KEY ? await ragAnswer(db, env, question, region) : null;
+  const rag = llmAvailable(env) ? await ragAnswer(db, env, question, region) : null;
   if (rag) {
     Object.assign(res, { route:'rag', conclusion:rag.conclusion, analysis:rag.analysis,
       citations:rag.citations, cases:rag.cases,
@@ -544,7 +601,7 @@ export async function answer(db, env, question, defaultRegion, sessionId) {
   }
 
   // —— 放开作答兜底（用户授权）：超纲不硬拒，给方案 + 出处分两档标注 ——
-  const opened = env.DEEPSEEK_API_KEY ? await openAnswer(db, env, question, region) : null;
+  const opened = llmAvailable(env) ? await openAnswer(db, env, question, region) : null;
   if (opened) {
     let note = '本回答为 AI 基于通用法律知识生成的参考方案。';
     if (opened.citations.length) note += '标「库内依据」的法条已在本库核对存在；';

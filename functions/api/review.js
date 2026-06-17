@@ -56,7 +56,8 @@ export async function onRequestPost({ request, env }) {
     const fields = body.fields || {};
     if (!DOC_QUERIES[docType]) return json({ error: `未知文书类型：${docType}` }, 400);
     if (!document) return json({ error: 'document 不能为空' }, 400);
-    if (!env.DEEPSEEK_API_KEY) return json({ error: '未配置 DeepSeek API，AI 审核不可用' }, 503);
+    if (!env.DEEPSEEK_API_KEY && !env.CLAUDE_API_KEY) return json({ error: '未配置 LLM，AI 审核不可用' }, 503);
+    env = { ...env, _model: body.model };
 
     // Hard rule checks
     const ruleFindings = [];

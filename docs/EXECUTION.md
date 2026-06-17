@@ -33,6 +33,15 @@ Python `pipeline.open_answer` + JS `functions/_pipeline.js openAnswer` 双侧同
 `refuse-pre2008-7`（涉钱分段）仍保持转律师。**红线不动：编造引用率 = 0 仍通过**。
 违法请求（如设计假证据链规避仲裁）由模型重定向到合规路径，非硬拒。
 
+**模型切换 + 语音输入 ✅ 2026-06-17**（用户需求）：①问答 LLM 可切换——`functions/_pipeline.js chatJson`
+多 provider（DeepSeek OpenAI 格式 / Claude Anthropic Messages 经 apiyi），前端顶栏选择器，请求带
+`model`，endpoint 注入 `env._model`；涉钱/六道防线不变；Python 端暂仍单 DeepSeek（eval 基线稳定）。
+②语音输入——`functions/api/asr.js` 代理豆包大模型 flash 一次性识别（HTTP，浏览器录 PCM→WAV 16k→
+base64→Worker 带服务端鉴权头转发→`result.text`），Access Token 不下发前端（规格见记忆
+`volcengine-asr-integration.md`）。③移动端豆包式纯对话：大号「按住说话」+ ≤767px 隐藏引用卡/侧栏。
+凭据走 CF Pages secret（DeepSeek/Claude/豆包 ASR/博查）。线上实测：模型列表两项、Claude 开放作答
+带分档引用、语音端点真连豆包鉴权通过。
+
 ---
 
 ## 1. 全局约定（每个任务都必须遵守）

@@ -358,6 +358,31 @@ ol.howto li::before {
 #send:hover { background: var(--seal-deep); }
 #send:disabled { opacity: .4; cursor: not-allowed; }
 
+/* ===== 语音输入 ===== */
+.model-wrap select { color: var(--seal); font-weight: 600; }
+.mic-btn {
+  flex-shrink: 0; width: 46px; border: 1.5px solid var(--line); border-radius: 12px;
+  background: var(--card); color: var(--ink-2); display: grid; place-items: center;
+  cursor: pointer; transition: all .15s; touch-action: none; -webkit-user-select: none; user-select: none;
+}
+.mic-btn:hover { border-color: var(--seal); color: var(--seal); }
+.mic-btn.rec { background: var(--seal); color: #fff8f0; border-color: var(--seal);
+  animation: micPulse 1s ease-in-out infinite; }
+@keyframes micPulse { 0%,100% { box-shadow: 0 0 0 0 var(--seal-pale); } 50% { box-shadow: 0 0 0 6px transparent; } }
+/* 大号"按住说话"——默认隐藏，移动端显示 */
+.hold-talk {
+  display: none; width: calc(100% - 24px); margin: 9px 12px 0; height: 54px;
+  align-items: center; justify-content: center; gap: 9px;
+  border: none; border-radius: 27px; background: var(--seal); color: #fff8f0;
+  font-size: 16px; font-weight: 600; letter-spacing: 3px;
+  touch-action: none; -webkit-user-select: none; user-select: none;
+  box-shadow: 0 4px 16px -6px var(--seal); transition: transform .12s, background .15s;
+}
+.hold-talk:active, .hold-talk.rec { background: var(--seal-deep); transform: scale(.985); }
+.hold-talk.rec { animation: micPulse 1s ease-in-out infinite; }
+.asr-hint { text-align: center; font-size: 13px; color: var(--seal); padding: 7px 0 2px; }
+.asr-hint.err { color: var(--ink-3); }
+
 /* ============ 计算器 ============ */
 .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(310px, 1fr)); gap: 18px; }
 .calc {
@@ -712,6 +737,16 @@ footer p { font-size: 12.5px; color: var(--ink-3); max-width: 56ch; }
   .ask-in { padding: 0 12px; gap: 8px; }
   #send { padding: 0 18px; letter-spacing: 0; }
   .m-user { max-width: 92%; }
+  /* 语音：移动端显示大号"按住说话"，隐藏行内小麦克风 */
+  .mic-btn { display: none; }
+  .hold-talk { display: flex; }
+  .topbar-right { gap: 6px; }
+  .region-wrap { padding: 5px 7px; }
+  .region-wrap select { font-size: 12px; max-width: 92px; }
+  /* 豆包式纯对话：移动端隐藏问答里的引用卡、AI标注、参考案例，只留结论+分析+步骤 */
+  #v-chat .cite-in-msg, #v-chat .airefs, #v-chat .cases { display: none; }
+  #v-chat .m-bot .ans { background: transparent; border: none; box-shadow: none; padding: 4px 0; }
+  #v-chat .ans-foot { margin-top: 10px; padding-top: 10px; }
   .ans { padding: 16px; border-radius: 12px; }
   .concl { font-size: 16px; }
   .stamp-num { font-size: 25px; }
@@ -788,6 +823,9 @@ footer p { font-size: 12.5px; color: var(--ink-3); max-width: 56ch; }
   <symbol id="i-pin" viewBox="0 0 24 24">
     <path d="M12 21s-7-5.3-7-11a7 7 0 0 1 14 0c0 5.7-7 11-7 11z" fill="none" stroke="currentColor" stroke-width="1.7"/>
     <circle cx="12" cy="10" r="2.6" fill="none" stroke="currentColor" stroke-width="1.6"/>
+  </symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24">
+    <path d="M12 3l1.6 5.2L19 10l-5.4 1.8L12 17l-1.6-5.2L5 10l5.4-1.8z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
   </symbol>
   <!-- 大幅插画 · 天平 -->
   <symbol id="il-scales" viewBox="0 0 96 96">
@@ -919,6 +957,10 @@ footer p { font-size: 12.5px; color: var(--ink-3); max-width: 56ch; }
       <div class="view-sub" id="view-sub">六道防线 · 只依据库内法条作答 · 算不准就转律师</div>
     </div>
     <div class="topbar-right">
+      <label class="region-wrap model-wrap" id="model-wrap" hidden>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--seal)" stroke-width="2"><use href="#i-spark"/></svg>
+        <select id="model" title="切换问答模型"></select>
+      </label>
       <label class="region-wrap">
         <svg width="14" height="14" color="var(--seal)"><use href="#i-pin"/></svg>
         <select id="region">
@@ -1153,10 +1195,25 @@ footer p { font-size: 12.5px; color: var(--ink-3); max-width: 56ch; }
 </div>
 
 <!-- 提问栏 -->
-<div id="ask-bar"><div class="ask-in">
-  <textarea id="q" rows="1" placeholder="描述用工情况，回车发送"></textarea>
-  <button id="send">发送</button>
-</div></div>
+<div id="ask-bar">
+  <div class="ask-in">
+    <button id="mic" class="mic-btn" type="button" aria-label="按住说话" title="按住说话">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><line x1="12" y1="18" x2="12" y2="22"/>
+      </svg>
+    </button>
+    <textarea id="q" rows="1" placeholder="描述用工情况，回车发送"></textarea>
+    <button id="send">发送</button>
+  </div>
+  <!-- 移动端大号按住说话 -->
+  <button id="hold-talk" class="hold-talk" type="button">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><line x1="12" y1="18" x2="12" y2="22"/>
+    </svg>
+    <span class="ht-label">按住 说话</span>
+  </button>
+  <div class="asr-hint" id="asr-hint" hidden></div>
+</div>
 
 </div><!-- .app -->
 <script>
@@ -1176,6 +1233,13 @@ const api = (p, body) => fetch(_base + p, body
   ? {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)}
   : {}).then(r => r.json());
 const region = () => $('#region').value;
+let MODELS = [];
+const currentModel = () => ($('#model') && $('#model').value) || (MODELS[0] && MODELS[0].id) || undefined;
+const currentModelLabel = () => {
+  const id = currentModel();
+  const m = MODELS.find(x => x.id === id);
+  return m ? m.label : 'AI';
+};
 
 /* —— 导航 —— */
 const VIEW_META = {
@@ -1268,7 +1332,7 @@ function answerHtml(a, q) {
   const [label, cls] = ROUTE_LABEL[a.route] || ['回答', 'b-gray'];
   let h = `<div class="ans"><div class="route-bar">
     <span class="badge ${cls}">${label}</span>
-    <span class="badge b-gray">${a.llm_used ? 'DeepSeek 管线' : '规则引擎'}</span>`;
+    <span class="badge b-gray">${a.llm_used ? esc(currentModelLabel()) + ' 管线' : '规则引擎'}</span>`;
   if (a.region) h += `<span class="badge b-gray">${esc(a.region)}</span>`;
   h += `</div><div class="concl pretty">${esc(a.conclusion)}</div>`;
   if (a.clarify && a.clarify.length) {
@@ -1377,7 +1441,7 @@ async function ask(q) {
   hold.scrollIntoView({behavior:'smooth', block:'end'});
   $('#send').disabled = true;
   try {
-    const a = await api('/api/ask', {question: q, region: region(), session_id: sessionId});
+    const a = await api('/api/ask', {question: q, region: region(), session_id: sessionId, model: currentModel()});
     if (a.error) {
       hold.innerHTML = `<div class="ans"><p style="color:var(--seal-deep)">出错：${esc(a.error)}</p></div>`;
     } else {
@@ -1410,6 +1474,78 @@ $('#send').onclick = () => { const q = $('#q').value.trim(); if (q) { $('#q').va
 $('#q').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); $('#send').click(); } });
 $('#q').addEventListener('input', function() { this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 130) + 'px'; });
 $('#chips').addEventListener('click', e => { if (e.target.matches('.chip')) ask(e.target.textContent.trim()); });
+
+/* ===== 语音输入：按住说话 → 录 PCM → 编 WAV(16k) → 豆包 flash 识别（服务端代理 /api/asr）===== */
+(function voiceInput(){
+  let ctx, stream, proc, source, mute, chunks = [], recording = false, srcRate = 48000;
+  const hint = $('#asr-hint');
+  const setHint = (t, err) => { if(!hint) return; hint.hidden = !t; hint.textContent = t||''; hint.classList.toggle('err', !!err); };
+  const flash = (t,err)=>{ setHint(t,err); setTimeout(()=>setHint(''), 2200); };
+  function setRec(on){
+    recording = on;
+    ['#mic','#hold-talk'].forEach(s => { const b=$(s); if(b) b.classList.toggle('rec', on); });
+    const ht = $('#hold-talk') && $('#hold-talk').querySelector('.ht-label'); if (ht) ht.textContent = on ? '松开 结束' : '按住 说话';
+  }
+  async function start(){
+    if (recording) return;
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { flash('当前环境不支持录音（需 HTTPS）', true); return; }
+    try { stream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount:1, echoCancellation:true, noiseSuppression:true } }); }
+    catch(e){ flash('麦克风权限被拒绝或不可用', true); return; }
+    ctx = new (window.AudioContext||window.webkitAudioContext)();
+    srcRate = ctx.sampleRate; chunks = [];
+    source = ctx.createMediaStreamSource(stream);
+    proc = ctx.createScriptProcessor(4096, 1, 1);
+    proc.onaudioprocess = e => { if(recording) chunks.push(new Float32Array(e.inputBuffer.getChannelData(0))); };
+    mute = ctx.createGain(); mute.gain.value = 0;          // 零增益接 destination：触发回调又不外放（防回声）
+    source.connect(proc); proc.connect(mute); mute.connect(ctx.destination);
+    setRec(true); setHint('正在聆听…');
+  }
+  async function stop(){
+    if (!recording) return;
+    setRec(false);
+    try { proc&&proc.disconnect(); source&&source.disconnect(); mute&&mute.disconnect(); } catch(e){}
+    if (stream) stream.getTracks().forEach(t=>t.stop());
+    if (ctx) { try{ await ctx.close(); }catch(e){} }
+    let len = chunks.reduce((a,c)=>a+c.length, 0);
+    if (len < srcRate*0.3) { flash('说话太短，请按住多说一会儿', true); return; }
+    const merged = new Float32Array(len); let off=0; for(const c of chunks){ merged.set(c, off); off+=c.length; }
+    const ds = downsample(merged, srcRate, 16000);
+    const b64 = bytesToB64(new Uint8Array(encodeWAV(ds, 16000)));
+    setHint('识别中…');
+    try {
+      const r = await api('/api/asr', { audio: b64 });
+      if (r && r.text) { setHint(''); ask(r.text.trim()); }
+      else flash(r && r.error ? r.error : '没听清，请再说一次', true);
+    } catch(e){ flash('识别服务异常，请重试', true); }
+  }
+  function downsample(buf, from, to){
+    if (to >= from) return buf;
+    const ratio = from/to, outLen = Math.round(buf.length/ratio), out = new Float32Array(outLen);
+    let oi=0, bi=0;
+    while(oi < outLen){ const next = Math.round((oi+1)*ratio); let s=0,n=0; for(let i=bi;i<next && i<buf.length;i++){ s+=buf[i]; n++; } out[oi]= n? s/n : 0; oi++; bi=next; }
+    return out;
+  }
+  function encodeWAV(samples, rate){
+    const buf = new ArrayBuffer(44 + samples.length*2), v = new DataView(buf);
+    const ws = (o,s)=>{ for(let i=0;i<s.length;i++) v.setUint8(o+i, s.charCodeAt(i)); };
+    ws(0,'RIFF'); v.setUint32(4, 36+samples.length*2, true); ws(8,'WAVE'); ws(12,'fmt ');
+    v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,1,true);
+    v.setUint32(24,rate,true); v.setUint32(28,rate*2,true); v.setUint16(32,2,true); v.setUint16(34,16,true);
+    ws(36,'data'); v.setUint32(40, samples.length*2, true);
+    let o=44; for(let i=0;i<samples.length;i++){ const s=Math.max(-1,Math.min(1,samples[i])); v.setInt16(o, s<0? s*0x8000 : s*0x7FFF, true); o+=2; }
+    return buf;
+  }
+  function bytesToB64(bytes){ let bin=''; const ch=0x8000; for(let i=0;i<bytes.length;i+=ch) bin += String.fromCharCode.apply(null, bytes.subarray(i, i+ch)); return btoa(bin); }
+  function wire(sel){
+    const b = $(sel); if(!b) return;
+    b.addEventListener('pointerdown', e => { e.preventDefault(); try{ b.setPointerCapture(e.pointerId); }catch(_){} start(); });
+    const end = e => { e.preventDefault(); stop(); };
+    b.addEventListener('pointerup', end);
+    b.addEventListener('pointercancel', end);
+    b.addEventListener('contextmenu', e => e.preventDefault());
+  }
+  wire('#mic'); wire('#hold-talk');
+})();
 
 /* —— 文书起草 —— */
 let docTypes = [], docSel = null, lastDoc = null;
@@ -1771,6 +1907,12 @@ async function loadDb() {
   const s = await api('/api/db/summary');
   if (s.llm) { $('#llm-text').textContent = s.llm; $('#llm-dot').classList.add('on'); }
   else { $('#llm-text').textContent = '规则引擎'; }
+  MODELS = s.models || [];
+  const msel = $('#model'), mwrap = $('#model-wrap');
+  if (msel && MODELS.length >= 2) {
+    msel.innerHTML = MODELS.map(m => `<option value="${m.id}">${m.label}</option>`).join('');
+    mwrap.hidden = false;
+  } else if (mwrap) { mwrap.hidden = true; }
   $('#db-stats').innerHTML = [
     [s.sources, '法规（部）'], [s.articles, '法条（条）'],
     [s.articles_unverified, '待核验法条', 'hot'], [s.entries, '百科词条'],

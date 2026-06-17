@@ -11,7 +11,7 @@ export async function onRequestPost({ request, env }) {
     const body = await request.json().catch(() => ({}));
     const q = (body.question || '').trim();
     if (!q) return json({ error: 'question 不能为空' }, 400);
-    const res = await answer(env.DB, env, q, body.region || null, body.session_id || null);
+    const res = await answer(env.DB, { ...env, _model: body.model }, q, body.region || null, body.session_id || null);
     return json(res);
   } catch (e) {
     return json({ error: String(e.message || e) }, 500);

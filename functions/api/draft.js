@@ -47,7 +47,8 @@ export async function onRequestPost({ request, env }) {
     const body = await request.json().catch(() => ({}));
     const dt = DOC_TYPES[body.type];
     if (!dt) return json({ error: `未知文书类型：${body.type}` }, 400);
-    if (!env.DEEPSEEK_API_KEY) return json({ error: '未配置 DeepSeek API，文书起草不可用' }, 503);
+    if (!env.DEEPSEEK_API_KEY && !env.CLAUDE_API_KEY) return json({ error: '未配置 LLM，文书起草不可用' }, 503);
+    env = { ...env, _model: body.model };
     const fields = body.fields || {};
     const note = ['note','basis','fact','reason'].map(k => String(fields[k]||'')).join(' ');
     const ctx = await retrieve(env.DB, dt.query + ' ' + note, body.region || null, 5);

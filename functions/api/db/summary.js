@@ -20,10 +20,13 @@ export async function onRequestGet({ env }) {
   const metaRow = await db.prepare("SELECT value FROM meta WHERE key='built_at'").first();
   const qaLogged = await count("SELECT count(*) AS n FROM qa_message");
   const referrals = await count("SELECT count(*) AS n FROM referral");
+  const models = [];
+  if (env.DEEPSEEK_API_KEY) models.push({ id: 'deepseek-chat', label: 'DeepSeek' });
+  if (env.CLAUDE_API_KEY) models.push({ id: env.CLAUDE_MODEL || 'claude-opus-4-8', label: 'Claude' });
   return json({ sources, articles, articles_unverified: articlesUnverified,
     entries, params, regions, cases, templates: 0, local_sources: 0,
     built_at: metaRow?.value ?? '-',
-    llm: env.DEEPSEEK_API_KEY ? (env.DEEPSEEK_MODEL || 'deepseek-chat') : null,
+    llm: models[0]?.id ?? null, models,
     qa_logged: qaLogged, referrals });
 }
 
