@@ -8,3 +8,6 @@ data/verify_report.md
 data/raw/*.fetch.txt
 data/eval/report_*.md
 data/review/*.md
+.wrangler/
+node_modules/
+migrations/0002_seed.sql

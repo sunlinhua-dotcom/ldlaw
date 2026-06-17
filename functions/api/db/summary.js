@@ -7,7 +7,6 @@ function json(obj, status = 200) {
 
 export async function onRequestGet({ env }) {
   const db = env.DB;
-  const g = async sql => (await db.prepare(sql).first())?.[Object.keys(await db.prepare(sql).first())[0]] ?? 0;
   const count = async sql => { const r = await db.prepare(sql).first(); return r ? Object.values(r)[0] : 0; };
   const [sources, articles, articlesUnverified, entries, params, regions, cases] = await Promise.all([
     count("SELECT count(*) AS n FROM legal_source"),
