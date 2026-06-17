@@ -8,7 +8,7 @@ compatibility_date = "2024-09-23"
 [[d1_databases]]
 binding = "DB"
 database_name = "ldlawq"
-database_id = "YOUR_D1_DATABASE_ID"
+database_id = "190103a0-ff8f-4def-81ae-c4c6aee3c936"
 
 # 环境变量在 Cloudflare Pages 控制台 → 设置 → 环境变量 里配置：
 #   DEEPSEEK_API_KEY   （必填，密钥；建议加密 Secret）
