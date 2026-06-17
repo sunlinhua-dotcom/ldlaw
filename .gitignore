@@ -11,3 +11,4 @@ data/review/*.md
 .wrangler/
 node_modules/
 migrations/0002_seed.sql
+pitch/
